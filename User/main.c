@@ -10,34 +10,8 @@
 #include "touch.h"
 #include "KEY.h"
 #include "EXIT.h"
-// ====================== 颜色常量定义 ======================
-#ifndef LIGHT_GREEN
-#define LIGHT_GREEN 0x07E0
-#endif
-#ifndef LIGHT_GRAY
-#define LIGHT_GRAY 0xD69A
-#endif
-#ifndef DARK_BLUE
-#define DARK_BLUE 0x001F
-#endif
-#ifndef DARK_GRAY
-#define DARK_GRAY 0x7BEF
-#endif
-#ifndef LIGHT_BLUE
-#define LIGHT_BLUE 0x877F
-#endif
-#ifndef WHITE
-#define WHITE 0xFFFF
-#endif
-#ifndef RED
-#define RED 0xF800
-#endif
-#ifndef BROWN
-#define BROWN 0xBC40
-#endif
-#ifndef BLACK
-#define BLACK 0x0000
-#endif
+
+unsigned char Int_flag = 0;
 
 // ====================== 函数声明 ======================
 void Alarm0_Callback(void);

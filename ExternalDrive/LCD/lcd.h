@@ -21,6 +21,11 @@
 #define DFT_SCAN_DIR  R2L_D2U  											//	默认的扫描方向
 
 //	画笔颜色
+#define LIGHT_GREEN      0x07E0
+#define LIGHT_GRAY       0xD69A
+#define DARK_BLUE        0x001F
+#define DARK_GRAY        0x7BEF
+#define LIGHT_BLUE       0x877F
 #define WHITE         	 0xFFFF
 #define BLACK         	 0x0000
 #define BLUE         	 0x001F
