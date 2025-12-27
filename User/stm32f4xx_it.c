@@ -29,7 +29,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
-
+#include "delay.h"
+#include "DEVICE.h"
+#include "USART.h"
 u8 Update_Flag = 0;
 /** @addtogroup STM32F4xx_StdPeriph_Examples
  * @{
@@ -141,4 +143,54 @@ void PendSV_Handler(void)
  */
 void SysTick_Handler(void)
 {
+    // 只有当有数据接收时，才开始计时
+    if (Uart3.RXlenth > 0) {
+        Uart3.Time++;
+        // 超时时间设为10ms（可根据需求调整）
+        if (Uart3.Time >= 10) {
+            Uart3.ReceiveFinish = 1; // 置1，标识接收完成
+            Uart3.Time          = 0; // 重置超时计数
+        }
+    }
+    TimingDelay_Decrement();
+}
+
+void TIM1_UP_TIM10_IRQHandler(void)
+{
+    if (TIM_GetITStatus(TIM10, TIM_IT_Update) != RESET) {
+        Update_Flag = 1;
+        LED1_REVERSE;
+        TIM_ClearITPendingBit(TIM10, TIM_IT_Update);
+    }
+}
+
+void USART3_IRQHandler(void)
+{
+    unsigned char rec_data;
+    // 检查接收非空中断标志
+    if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) {
+        rec_data = USART_ReceiveData(USART3);           // 读取接收的数据
+        USART_ClearITPendingBit(USART3, USART_IT_RXNE); // 清除中断标志
+
+        // 防止缓冲区溢出（300是缓冲区大小）
+        if (Uart3.RXlenth < 300) {
+            Uart3.Rxbuf[Uart3.RXlenth++] = rec_data; // 数据存入缓冲区
+            Uart3.Time                   = 0;        // 有新数据，重置超时计数（关键）
+        }
+        Uart3.ReceiveFinish = 0; // 接收中，置为未完成
+    }
+
+    // 处理溢出错误（可选，防止数据丢失）
+    if (USART_GetITStatus(USART3, USART_IT_ORE) != RESET) {
+        USART_ClearITPendingBit(USART3, USART_IT_ORE);
+        (void)USART_ReceiveData(USART3); // 清除溢出错误
+    }
+}
+extern unsigned char Int_flag;
+void EXTI9_5_IRQHandler(void)
+{
+    if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
+        Int_flag = 1;
+        EXTI_ClearITPendingBit(EXTI_Line8);
+    }
 }

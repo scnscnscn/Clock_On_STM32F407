@@ -52,6 +52,34 @@ virtualFolder:
         - path: Libraries/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
         - path: Libraries/CMSIS/Device/ST/STM32F4xx/Source/Templates/arm/startup_stm32f4xx.s
       folders: []
+    - name: ExternalDrive
+      files: []
+      folders:
+        - name: LCD
+          files:
+            - path: ExternalDrive/LCD/lcd.c
+          folders: []
+        - name: TOUCH
+          files:
+            - path: ExternalDrive/TOUCH/24cxx.c
+            - path: ExternalDrive/TOUCH/ctiic.c
+            - path: ExternalDrive/TOUCH/ft5206.c
+            - path: ExternalDrive/TOUCH/gt9147.c
+            - path: ExternalDrive/TOUCH/myiic.c
+            - path: ExternalDrive/TOUCH/ott2001a.c
+            - path: ExternalDrive/TOUCH/sys.c
+            - path: ExternalDrive/TOUCH/touch.c
+          folders: []
+    - name: BaseDrive
+      files:
+        - path: BaseDrive/delay.c
+        - path: BaseDrive/DEVICE.c
+        - path: BaseDrive/USART.c
+        - path: BaseDrive/KEY.c
+        - path: BaseDrive/EXIT.c
+        - path: BaseDrive/weather.c
+        - path: BaseDrive/Timer.c
+      folders: []
 dependenceList: []
 outDir: build
 miscInfo:
@@ -68,6 +96,9 @@ targets:
         - .cmsis/include
         - Libraries/CMSIS/Device/ST/STM32F4xx/Include
         - User
+        - ExternalDrive/LCD
+        - BaseDrive
+        - ExternalDrive/TOUCH
       libList: []
     excludeList: []
     toolchain: AC5
@@ -86,7 +117,8 @@ targets:
             C_FLAGS: --diag_suppress=1 --diag_suppress=1295
             c99-mode: true
             one-elf-section-per-function: true
-            optimization: level-2
+            optimization: level-0
+            warnings: unspecified
           global:
             output-debug-info: enable
             use-microLIB: false
@@ -94,7 +126,10 @@ targets:
             $outputTaskExcludes:
               - .bin
             output-format: elf
-        scatterFilePath: <YOUR_SCATTER_FILE>.sct
+            ro-base: "0x08000000"
+            rw-base: "0x20000000"
+            xo-base: ""
+        scatterFilePath: ""
         storageLayout:
           RAM:
             - id: 1

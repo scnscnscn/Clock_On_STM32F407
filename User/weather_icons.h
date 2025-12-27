@@ -5,8 +5,8 @@
 
 // 天气图标配置（单个图标2048字节，RGB565格式64x64）
 #define WEATHER_ICON_BYTES    2048        // 单个图标字节数
-#define WEATHER_ICON_WIDTH    64          // 图标宽度（64x64=4096像素，RGB565占2字节/像素 → 8192？需根据实际调整）
-#define WEATHER_ICON_HEIGHT   64          // 图标高度
+#define WEATHER_ICON_WIDTH    32          // 图标宽度（64x64=4096像素，RGB565占2字节/像素 → 8192？需根据实际调整）
+#define WEATHER_ICON_HEIGHT   32         // 图标高度
 #define WEATHER_ICON_MIN_CODE 100   // 最小天气编码
 #define WEATHER_ICON_MAX_CODE 515   // 最大天气编码
 
