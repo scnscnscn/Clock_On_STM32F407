@@ -192,7 +192,7 @@ st-flash write output.bin 0x08000000
 
 本项目采用 MIT License 开源协议。
 
-## �� 贡献
+## 🤝 贡献
 
 欢迎提交Issue和Pull Request！
 
