@@ -11,21 +11,18 @@ void TIM10_TimeSliceInit(void)
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM10, ENABLE);
 
-    // 配置为10ms中断 (100Hz)
-    // APB2总线频率假设为84MHz (需根据实际时钟树确认，此处按F4标准配置)
-    // 84,000,000 / 8400 = 10,000 Hz (10kHz) 计数频率
-    TIM_TimeBaseStruct.TIM_Prescaler   = 8399;
-    TIM_TimeBaseStruct.TIM_CounterMode = TIM_CounterMode_Up;
-    // 10,000 / 100 = 100 Hz -> 10ms周期
-    TIM_TimeBaseStruct.TIM_Period        = 99;
+    // 配置为10ms中断（严格无舍入误差，适配TIM10时钟=168MHz）
+    TIM_TimeBaseStruct.TIM_Prescaler     = 167; // 168MHz / (167+1) = 1MHz（无舍入）
+    TIM_TimeBaseStruct.TIM_CounterMode   = TIM_CounterMode_Up;
+    TIM_TimeBaseStruct.TIM_Period        = 9999; // 1MHz / (9999+1) = 100Hz → 10ms周期（无舍入）
     TIM_TimeBaseStruct.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseInit(TIM10, &TIM_TimeBaseStruct);
 
     TIM_ITConfig(TIM10, TIM_IT_Update, ENABLE);
 
     NVIC_InitStruct.NVIC_IRQChannel                   = TIM1_UP_TIM10_IRQn;
-    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 2;
-    NVIC_InitStruct.NVIC_IRQChannelSubPriority        = 3;
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1; // 提高优先级，避免被阻塞（关键优化）
+    NVIC_InitStruct.NVIC_IRQChannelSubPriority        = 0;
     NVIC_InitStruct.NVIC_IRQChannelCmd                = ENABLE;
     NVIC_Init(&NVIC_InitStruct);
 

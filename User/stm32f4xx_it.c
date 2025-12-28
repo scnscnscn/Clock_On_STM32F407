@@ -190,7 +190,7 @@ void EXTI9_5_IRQHandler(void)
 void TIM1_UP_TIM10_IRQHandler(void)
 {
     if (TIM_GetITStatus(TIM10, TIM_IT_Update) != RESET) {
-        TIM_ClearITPendingBit(TIM10, TIM_IT_Update);
         Update_Flag = 1; // 触发 Main 循环中的时间片逻辑
+        TIM_ClearITPendingBit(TIM10, TIM_IT_Update);
     }
 }

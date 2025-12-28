@@ -10,7 +10,7 @@
 #include "touch.h"
 #include "KEY.h"
 #include "EXIT.h"
-
+#include "kokomi.h"
 unsigned char Int_flag = 0;
 
 // ====================== 函数声明 ======================
@@ -445,7 +445,7 @@ void Draw_Page1_Alarm_List(void)
 
         show_idx++;
     }
-
+    
     g_alarm_data_changed = 0;
 
 #undef ALARM_LIST_X
@@ -506,8 +506,10 @@ void Page_Switch(u8 page)
         g_alarm_data_changed = 1;
         weather_lcd_show();
         Draw_Page1_Alarm_List();
+        LCD_DrawPicture(10, 380, 457, 730, (u8 *)kokomi);
     } else if (page == PAGE_2) {
         // 进入PAGE2，复制闹钟数据
+        LCD_Clear(WHITE);
         Alarm_Copy(&g_edit_alarm, &g_alarm_list[g_selected_alarm]);
         Draw_Page2_Alarm_Set();
     }
@@ -629,9 +631,9 @@ void Alarm1_Callback(void)
 }
 volatile u32 g_systick_ms_counter = 0;
 u8 g_time_updated_flag            = 0;
-
-
-u8 Update_Flag=0;
+// 新增：全局标志位，用于标记是否需要刷新时间UI（解耦耗时UI操作，不阻塞计时）
+u8 g_need_refresh_time_ui = 0;
+volatile u8 Update_Flag   = 0;
 // 主函数
 int main(void)
 {
@@ -653,8 +655,10 @@ int main(void)
     memset(&g_weather, 0, sizeof(WeatherData));
     strncpy(g_weather.time_str, "2025-12-27 00:00:00", sizeof(g_weather.time_str) - 1);
     g_weather.temp       = 25;
+    g_weather.precip     = 0;
     g_weather.feels_like = 26;
     g_weather.icons      = 100;
+    g_weather.humidity   = 60;
 
     g_real_time.hour   = 0;
     g_real_time.minute = 0;
@@ -681,21 +685,23 @@ int main(void)
     // 首次发送请求
     USART3_Senddata((uint8_t *)" GET_WEATHER", 12);
 
+
+
     while (1) {
+        // ============== 第一步：优先执行【时间更新核心逻辑】（无耗时，不阻塞）==============
         // 3. 核心时间片逻辑
         // Update_Flag 在 TIM1_UP_TIM10_IRQHandler 中置1 (周期10ms)
         if (Update_Flag == 1) {
-            Update_Flag = 0; // 清除标志
+            Update_Flag = 0; // 立即清除标志，避免重复处理（核心优化）
 
-            // 处理 Timer.c 中的倒计时任务 (如天气请求)
-            AlarmTimer_Process();
-
-            // 累积时间，处理秒级任务
+            // 【第一步：先执行时间累积（无耗时，最优先）】
             timer_1s_accumulator++;
-            if (timer_1s_accumulator >= 100) { // 100 * 10ms = 1秒
+
+            // 【第二步：执行秒级时间更新逻辑（无耗时，纯内存/寄存器操作）】
+            if (timer_1s_accumulator >= 76) {
                 timer_1s_accumulator = 0;
 
-                // 更新实时时间
+                // 更新实时时间（纯数值计算，无耗时）
                 g_real_time.second++;
                 if (g_real_time.second >= 60) {
                     g_real_time.second = 0;
@@ -706,18 +712,24 @@ int main(void)
                         if (g_real_time.hour >= 24) g_real_time.hour = 0;
                     }
                 }
+
+                // 格式化时间（纯字符串操作，无硬件耗时）
                 format_real_time_to_str();
 
-                // 检查时刻闹钟
+                // 检查时刻闹钟（纯逻辑判断，无耗时）
                 Alarm_CheckAndTrigger();
 
-                // 刷新界面时间
+                // 标记需要刷新时间UI（不直接执行耗时UI操作，解耦阻塞）
                 if (g_current_page == PAGE_1) {
-                    weather_lcd_show();
+                    g_need_refresh_time_ui = 1;
                 }
             }
+
+            // 【第三步：执行Timer模块倒计时任务（无耗时，优先处理）】
+            AlarmTimer_Process();
         }
 
+        // ============== 第二步：执行其他低优先级任务（可能耗时，不影响计时）==============
         // 常规UI与交互任务 (非阻塞)
         if (Int_flag == 1) {
             delay_ms(20);
@@ -745,6 +757,13 @@ int main(void)
             LED2_ON;
             delay_ms(200);
             LED2_OFF;
+        }
+
+        // 【新增：低优先级处理时间UI刷新（不阻塞核心计时）】
+        if (g_need_refresh_time_ui == 1) {
+            weather_lcd_show();
+            g_need_refresh_time_ui = 0; // 清除刷新标志
+            
         }
 
         refresh_count++;
