@@ -136,13 +136,17 @@ void PendSV_Handler(void)
 {
 }
 extern u32 g_systick_ms_counter;
-/**
- * @brief  This function handles SysTick Handler.
- * @param  None
- * @retval None
- */
+/********************************************************************************
+ * @brief  SysTick中断服务程序
+ * @param  无
+ * @retval 无
+ * @note   每1ms触发一次，用于:
+ *         1. 串口接收超时检测
+ *         2. delay_ms延时计数
+ ********************************************************************************/
 void SysTick_Handler(void)
 {
+    /* 串口接收超时检测 */
     // 只有当有数据接收时，才开始计时
     if (Uart3.RXlenth > 0) {
         Uart3.Time++;
@@ -152,13 +156,23 @@ void SysTick_Handler(void)
             Uart3.Time          = 0; // 重置超时计数
         }
     }
+    
+    /* delay_ms延时计数递减 */
     TimingDelay_Decrement();
 }
 
 
+/********************************************************************************
+ * @brief  USART3中断服务程序
+ * @param  无
+ * @retval 无
+ * @note   处理串口接收中断和溢出错误
+ *         采用超时机制判断接收完成（10ms无新数据即认为完成）
+ ********************************************************************************/
 void USART3_IRQHandler(void)
 {
     unsigned char rec_data;
+    
     // 检查接收非空中断标志
     if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) {
         rec_data = USART_ReceiveData(USART3);           // 读取接收的数据
@@ -178,19 +192,34 @@ void USART3_IRQHandler(void)
         (void)USART_ReceiveData(USART3); // 清除溢出错误
     }
 }
+/********************************************************************************
+ * @brief  外部中断EXTI9_5中断服务程序
+ * @param  无
+ * @retval 无
+ * @note   处理PF8按键中断（EXTI Line 8）
+ *         用途: 按下按键关闭蜂鸣器
+ ********************************************************************************/
 extern unsigned char Int_flag;
 void EXTI9_5_IRQHandler(void)
 {
     if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
-        Int_flag = 1;
-        EXTI_ClearITPendingBit(EXTI_Line8);
+        Int_flag = 1;  /* 设置中断标志，主循环中处理 */
+        EXTI_ClearITPendingBit(EXTI_Line8);  /* 清除中断标志位 */
     }
 }
 
+/********************************************************************************
+ * @brief  TIM1更新和TIM10中断服务程序
+ * @param  无
+ * @retval 无
+ * @note   TIM10每10ms触发一次，用于时间片管理
+ *         设置Update_Flag标志通知主循环处理定时任务
+ ********************************************************************************/
+extern u8 Update_Flag;
 void TIM1_UP_TIM10_IRQHandler(void)
 {
     if (TIM_GetITStatus(TIM10, TIM_IT_Update) != RESET) {
-        Update_Flag = 1; // 触发 Main 循环中的时间片逻辑
-        TIM_ClearITPendingBit(TIM10, TIM_IT_Update);
+        Update_Flag = 1; // 触发Main循环中的时间片逻辑
+        TIM_ClearITPendingBit(TIM10, TIM_IT_Update);  /* 清除中断标志位 */
     }
 }
