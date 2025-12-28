@@ -32,7 +32,7 @@
 #include "delay.h"
 #include "DEVICE.h"
 #include "USART.h"
-u8 Update_Flag = 0;
+extern u8 Update_Flag;
 /** @addtogroup STM32F4xx_StdPeriph_Examples
  * @{
  */
@@ -136,7 +136,6 @@ void PendSV_Handler(void)
 {
 }
 extern u32 g_systick_ms_counter;
-extern u8 g_systick_1s_flag;
 /**
  * @brief  This function handles SysTick Handler.
  * @param  None
@@ -154,23 +153,8 @@ void SysTick_Handler(void)
         }
     }
     TimingDelay_Decrement();
-    g_systick_ms_counter++;
-
-    // 2. 达到1000ms（1秒），仅设置标志位，其余逻辑全部移到主循环
-    if (g_systick_ms_counter >= 1000) {
-        g_systick_ms_counter = 0; // 重置毫秒计数器
-        g_systick_1s_flag    = 1; // 设置1秒到期标志位，通知主循环处理后续逻辑
-    }
 }
 
-void TIM1_UP_TIM10_IRQHandler(void)
-{
-    if (TIM_GetITStatus(TIM10, TIM_IT_Update) != RESET) {
-        Update_Flag = 1;
-        LED1_REVERSE;
-        TIM_ClearITPendingBit(TIM10, TIM_IT_Update);
-    }
-}
 
 void USART3_IRQHandler(void)
 {
@@ -200,5 +184,13 @@ void EXTI9_5_IRQHandler(void)
     if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
         Int_flag = 1;
         EXTI_ClearITPendingBit(EXTI_Line8);
+    }
+}
+
+void TIM1_UP_TIM10_IRQHandler(void)
+{
+    if (TIM_GetITStatus(TIM10, TIM_IT_Update) != RESET) {
+        TIM_ClearITPendingBit(TIM10, TIM_IT_Update);
+        Update_Flag = 1; // 触发 Main 循环中的时间片逻辑
     }
 }

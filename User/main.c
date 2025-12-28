@@ -3,7 +3,7 @@
 #include "delay.h"
 #include "DEVICE.h"
 #include "lcd.h"
-#include"Timer.h"
+#include "Timer.h" 
 #include "string.h"
 #include "stdlib.h"
 #include "weather_icons.h"
@@ -23,8 +23,8 @@ void Draw_Page2_Alarm_Set(void);
 u8 str_split(char *src, char delim, char **result, u8 max_len);
 
 // ====================== 页面与功能枚举 ======================
-#define PAGE_1 0
-#define PAGE_2 1
+#define PAGE_1            0
+#define PAGE_2            1
 
 #define FUNC_ALARM_1      0
 #define FUNC_ALARM_2      1
@@ -46,8 +46,8 @@ const u16 REFRESH_THRESHOLD   = 50;
 const u16 TOUCH_DEBOUNCE_TIME = 2;
 
 // ====================== PAGE2绘制标记 ======================
-u8 g_page2_last_page = PAGE_1; 
-u8 g_page2_btn_drawn = 0;     
+u8 g_page2_last_page = PAGE_1;
+u8 g_page2_btn_drawn = 0;
 u8 g_current_page    = PAGE_1;
 
 // 天气编码转名称
@@ -175,7 +175,6 @@ const char *WeatherCodeToName(uint16_t code)
     }
 }
 
-// 实时时间结构体
 typedef struct {
     u8 hour;
     u8 minute;
@@ -183,8 +182,8 @@ typedef struct {
 } RealTime;
 RealTime g_real_time = {0};
 
-// 闹钟结构体
-#define MAX_ALARM_CNT 5 
+// 闹钟结构体 - 修改为4个，因为天气闹钟已移交给Timer模块
+#define MAX_ALARM_CNT 5
 typedef struct {
     u8 hour;
     u8 minute;
@@ -194,12 +193,13 @@ typedef struct {
     char name[16];
 } AlarmInfo;
 
+// 移除原有的 Alarm0 (天气)，保留 1-4 对应 UI
 AlarmInfo g_alarm_list[MAX_ALARM_CNT] = {
-    {0, 5, 1, 0, Alarm0_Callback, "天气请求"}, 
-    {7, 30, 0, 1, Alarm1_Callback, "闹钟1"},  
-    {0, 0, 1, 1, Alarm1_Callback, "闹钟2"},   
-    {12, 30, 1, 1, Alarm1_Callback, "闹钟3"}, 
-    {18, 0, 0, 1, Alarm1_Callback, "闹钟4"}    
+    {0, 0, 0, 0, NULL, "保留位"},             // 索引0：占位符，不使用
+    {7, 30, 0, 1, Alarm1_Callback, "闹钟1"},  // 索引1
+    {0, 0, 1, 1, Alarm1_Callback, "闹钟2"},   // 索引2
+    {12, 30, 1, 1, Alarm1_Callback, "闹钟3"}, // 索引3
+    {18, 0, 0, 1, Alarm1_Callback, "闹钟4"}   // 索引4
 };
 
 // 触摸按键结构体
@@ -212,7 +212,6 @@ typedef struct {
     char name[16];
 } Touch_Button_t;
 
-// 触摸按键仅绑定显示的闹钟1~4
 Touch_Button_t g_touch_btns_page1[] = {
     {20, 235, 450, 265, FUNC_ALARM_1, "闹钟1"},
     {20, 270, 450, 300, FUNC_ALARM_2, "闹钟2"},
@@ -240,7 +239,7 @@ u8 Alarm_Set(u8 alarm_idx, u8 hour, u8 minute, u8 enable, u8 show, void (*callba
     g_alarm_list[alarm_idx].hour     = hour;
     g_alarm_list[alarm_idx].minute   = minute;
     g_alarm_list[alarm_idx].enable   = enable;
-    g_alarm_list[alarm_idx].show     = show; 
+    g_alarm_list[alarm_idx].show     = show;
     g_alarm_list[alarm_idx].callback = callback;
     if (name != NULL) {
         strncpy(g_alarm_list[alarm_idx].name, name, sizeof(g_alarm_list[alarm_idx].name) - 1);
@@ -249,16 +248,25 @@ u8 Alarm_Set(u8 alarm_idx, u8 hour, u8 minute, u8 enable, u8 show, void (*callba
     return 1;
 }
 
-// 闹钟触发检查
+// 闹钟触发检查 (针对 g_alarm_list 中的时刻闹钟)
 void Alarm_CheckAndTrigger(void)
 {
-    static u8 last_minute = 0xFF;
-    if (g_real_time.minute == last_minute) return;
-    last_minute = g_real_time.minute;
-    for (u8 i = 0; i < MAX_ALARM_CNT; i++) {
-        if (g_alarm_list[i].enable && g_alarm_list[i].hour == g_real_time.hour && g_alarm_list[i].minute == g_real_time.minute && g_alarm_list[i].callback != NULL) {
-            g_alarm_list[i].callback();
-            g_alarm_data_changed = 1;
+    static u8 last_second = 0xFF;
+    // 每秒检查一次，避免一分钟内重复触发，同时增加精度
+    if (g_real_time.second == last_second) return;
+    last_second = g_real_time.second;
+
+    // 只在秒数为0时检查分钟级闹钟
+    if (g_real_time.second == 0) {
+        for (u8 i = 1; i < MAX_ALARM_CNT; i++) { // 跳过索引0
+            if (g_alarm_list[i].enable &&
+                g_alarm_list[i].hour == g_real_time.hour &&
+                g_alarm_list[i].minute == g_real_time.minute &&
+                g_alarm_list[i].callback != NULL) {
+
+                g_alarm_list[i].callback();
+                g_alarm_data_changed = 1;
+            }
         }
     }
 }
@@ -620,69 +628,110 @@ void Alarm1_Callback(void)
     BEEP_ON;
 }
 volatile u32 g_systick_ms_counter = 0;
-u8 g_systick_1s_flag              = 0;
 u8 g_time_updated_flag            = 0;
 
 
-extern u8 Update_Flag;
+u8 Update_Flag=0;
 // 主函数
 int main(void)
 {
     EXTI_Config();
-    SysTick_Init(); 
+    SysTick_Init();
     LCD_Init();
     UART3_Configuration();
-    AlarmManager_Init();
+
+    // 1. 初始化 Timer 模块 (TIM10, 10ms中段)
     TIM10_TimeSliceInit();
+    AlarmManager_Init();
+
     LEDGpio_Init();
     KEYGpio_Init();
     tp_dev.init();
     LCD_Clear(WHITE);
 
+    // 初始化天气数据
     memset(&g_weather, 0, sizeof(WeatherData));
     strncpy(g_weather.time_str, "2025-12-27 00:00:00", sizeof(g_weather.time_str) - 1);
     g_weather.temp       = 25;
     g_weather.feels_like = 26;
-    g_weather.precip     = 0;
     g_weather.icons      = 100;
-    g_weather.humidity   = 60;
 
     g_real_time.hour   = 0;
     g_real_time.minute = 0;
     g_real_time.second = 0;
-    format_real_time_to_str();
 
-    // 初始化闹钟：新增show参数，0=隐藏（天气请求），1=显示（闹钟1~4）
-    Alarm_Set(0, 0, 5, 1, 0, Alarm0_Callback, "天气请求"); // 隐藏：每5分钟发送天气请求
-    Alarm_Set(1, 7, 30, 0, 1, Alarm1_Callback, "闹钟1");   // 显示：闹钟1
-    Alarm_Set(2, 0, 0, 1, 1, Alarm1_Callback, "闹钟2");    // 显示：闹钟2
-    Alarm_Set(3, 12, 30, 1, 1, Alarm1_Callback, "闹钟3");  // 显示：闹钟3
-    Alarm_Set(4, 18, 0, 0, 1, Alarm1_Callback, "闹钟4");   // 显示：闹钟4
+    // 初始化时刻闹钟 (UI显示) - 移除了原有的 Alarm0 设置
+    Alarm_Set(1, 7, 30, 0, 1, Alarm1_Callback, "闹钟1");
+    Alarm_Set(2, 0, 0, 1, 1, Alarm1_Callback, "闹钟2");
+    Alarm_Set(3, 12, 30, 1, 1, Alarm1_Callback, "闹钟3");
+    Alarm_Set(4, 18, 0, 0, 1, Alarm1_Callback, "闹钟4");
 
-    Alarm_Copy(&g_edit_alarm, &g_alarm_list[1]); 
+    // 2. 将天气请求注册到 Timer 模块 (间隔闹钟)
+    // 5分钟 = 300秒 = 30000个10ms时间片
+    // 使用 ALARM_REPEAT 模式，确保严格的每5分钟触发一次
+    Alarm_Register(30000, ALARM_REPEAT, Alarm0_Callback);
 
+    Alarm_Copy(&g_edit_alarm, &g_alarm_list[1]);
     Page_Switch(PAGE_1);
     LED2_OFF;
 
-    u16 refresh_count = 0;
-    USART3_Senddata((uint8_t *)" GET_WEATHER", 12); 
+    u16 refresh_count        = 0;
+    u16 timer_1s_accumulator = 0; // 用于累积10ms计数
+
+    // 首次发送请求
+    USART3_Senddata((uint8_t *)" GET_WEATHER", 12);
+
     while (1) {
+        // 3. 核心时间片逻辑
+        // Update_Flag 在 TIM1_UP_TIM10_IRQHandler 中置1 (周期10ms)
+        if (Update_Flag == 1) {
+            Update_Flag = 0; // 清除标志
+
+            // 处理 Timer.c 中的倒计时任务 (如天气请求)
+            AlarmTimer_Process();
+
+            // 累积时间，处理秒级任务
+            timer_1s_accumulator++;
+            if (timer_1s_accumulator >= 100) { // 100 * 10ms = 1秒
+                timer_1s_accumulator = 0;
+
+                // 更新实时时间
+                g_real_time.second++;
+                if (g_real_time.second >= 60) {
+                    g_real_time.second = 0;
+                    g_real_time.minute++;
+                    if (g_real_time.minute >= 60) {
+                        g_real_time.minute = 0;
+                        g_real_time.hour++;
+                        if (g_real_time.hour >= 24) g_real_time.hour = 0;
+                    }
+                }
+                format_real_time_to_str();
+
+                // 检查时刻闹钟
+                Alarm_CheckAndTrigger();
+
+                // 刷新界面时间
+                if (g_current_page == PAGE_1) {
+                    weather_lcd_show();
+                }
+            }
+        }
+
+        // 常规UI与交互任务 (非阻塞)
         if (Int_flag == 1) {
             delay_ms(20);
             if (GPIO_ReadOutputDataBit(GPIOF, GPIO_Pin_8) == 0) {
                 BEEP_OFF;
             }
-
             Int_flag = 0;
         }
+
         Touch_Scan_And_Match();
 
-        if (Update_Flag == 1) {
-            AlarmTimer_Process();
-            Update_Flag = 0;
-        }
-
+        // 串口处理
         if (Uart3.ReceiveFinish == 1) {
+            // (代码保持不变)
             if (Uart3.RXlenth < 300)
                 Uart3.Rxbuf[Uart3.RXlenth] = '\0';
             else
@@ -703,25 +752,6 @@ int main(void)
             if (g_weather.icons != 0) weather_lcd_show();
             Draw_Page1_Alarm_List();
             refresh_count = 0;
-        }
-
-        if (g_systick_1s_flag == 1) {
-            g_systick_1s_flag = 0;
-            g_real_time.second++;
-            if (g_real_time.second >= 60) {
-                g_real_time.second = 0;
-                g_real_time.minute++;
-                if (g_real_time.minute >= 60) {
-                    g_real_time.minute = 0;
-                    g_real_time.hour++;
-                    if (g_real_time.hour >= 24) g_real_time.hour = 0;
-                }
-            }
-            format_real_time_to_str();
-            Alarm_CheckAndTrigger();
-            if (g_current_page == PAGE_1) {
-                weather_lcd_show();
-            }
         }
     }
 }
