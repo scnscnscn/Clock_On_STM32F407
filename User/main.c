@@ -573,7 +573,7 @@ void Handle_Touch_Func(u8 func_id)
     }
 }
 
-// 触摸扫描与匹配（保持不变）
+// 触摸扫描与匹配
 void Touch_Scan_And_Match(void)
 {
     u16 tx, ty;
@@ -634,12 +634,14 @@ void Alarm1_Callback(void)
     }
     BEEP_ON;
 }
-
-// 主函数（修改：Alarm_Set调用新增show参数，对应显示/隐藏）
+volatile u32 g_systick_ms_counter = 0;
+u8 g_systick_1s_flag              = 0;
+u8 g_time_updated_flag            = 0;
+// 主函数
 int main(void)
 {
     EXTI_Config();
-    SysTick_Init();
+    SysTick_Init(); 
     LCD_Init();
     UART3_Configuration();
     AlarmManager_Init();
@@ -669,14 +671,13 @@ int main(void)
     Alarm_Set(3, 12, 30, 1, 1, Alarm1_Callback, "闹钟3");  // 显示：闹钟3
     Alarm_Set(4, 18, 0, 0, 1, Alarm1_Callback, "闹钟4");   // 显示：闹钟4
 
-    Alarm_Copy(&g_edit_alarm, &g_alarm_list[1]); // 默认复制闹钟1的数据
+    Alarm_Copy(&g_edit_alarm, &g_alarm_list[1]); 
 
     Page_Switch(PAGE_1);
     LED2_OFF;
 
     u16 refresh_count = 0;
-    u16 second_count  = 0;
-    USART3_Senddata((uint8_t *)" GET_WEATHER", 12); // 启动时发送一次天气请求
+    USART3_Senddata((uint8_t *)" GET_WEATHER", 12); 
     while (1) {
         if (Int_flag == 1) {
             delay_ms(20);
@@ -705,7 +706,7 @@ int main(void)
             Uart3.RXlenth       = 0;
             Uart3.Time          = 0;
             LED2_ON;
-            delay_ms(500);
+            delay_ms(200);
             LED2_OFF;
         }
 
@@ -715,8 +716,9 @@ int main(void)
             Draw_Page1_Alarm_List();
             refresh_count = 0;
         }
-        second_count++;
-        if (second_count >= 10) {
+
+        if (g_systick_1s_flag == 1) {
+            g_systick_1s_flag = 0;
             g_real_time.second++;
             if (g_real_time.second >= 60) {
                 g_real_time.second = 0;
@@ -729,13 +731,9 @@ int main(void)
             }
             format_real_time_to_str();
             Alarm_CheckAndTrigger();
-            // 时间更新后立即重绘天气界面
             if (g_current_page == PAGE_1) {
                 weather_lcd_show();
             }
-            second_count = 0;
         }
-
-        delay_ms(100);
     }
 }

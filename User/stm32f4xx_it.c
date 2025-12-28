@@ -135,7 +135,8 @@ void DebugMon_Handler(void)
 void PendSV_Handler(void)
 {
 }
-
+extern u32 g_systick_ms_counter;
+extern u8 g_systick_1s_flag;
 /**
  * @brief  This function handles SysTick Handler.
  * @param  None
@@ -153,6 +154,13 @@ void SysTick_Handler(void)
         }
     }
     TimingDelay_Decrement();
+    g_systick_ms_counter++;
+
+    // 2. 达到1000ms（1秒），仅设置标志位，其余逻辑全部移到主循环
+    if (g_systick_ms_counter >= 1000) {
+        g_systick_ms_counter = 0; // 重置毫秒计数器
+        g_systick_1s_flag    = 1; // 设置1秒到期标志位，通知主循环处理后续逻辑
+    }
 }
 
 void TIM1_UP_TIM10_IRQHandler(void)
