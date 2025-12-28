@@ -1,33 +1,33 @@
 /********************************************************************************
  * @file    main.c
- * @brief   STM32F407æ™ºèƒ½æ—¶é’Ÿä¸å¤©æ°”æ˜¾ç¤ºç³»ç»Ÿ - ä¸»ç¨‹åº
- * @author  é¡¹ç›®å¼€å‘å›¢é˜Ÿ
+ * @brief   STM32F407ÖÇÄÜÊ±ÖÓÓëÌìÆøÏÔÊ¾ÏµÍ³ - Ö÷³ÌĞò
+ * @author  ÏîÄ¿¿ª·¢ÍÅ¶Ó
  * @date    2025-12-27
  * @version 2.0
  * 
  * @description
- * æœ¬ç¨‹åºå®ç°äº†ä¸€ä¸ªåŸºäºSTM32F407çš„æ™ºèƒ½æ—¶é’Ÿç³»ç»Ÿï¼Œå…·å¤‡ä»¥ä¸‹åŠŸèƒ½ï¼š
- * 1. å®æ—¶æ—¶é’Ÿæ˜¾ç¤ºä¸ç®¡ç†
- * 2. å¤©æ°”ä¿¡æ¯æ˜¾ç¤ºï¼ˆæ¸©åº¦ã€æ¹¿åº¦ã€é™æ°´é‡ã€å¤©æ°”å›¾æ ‡ï¼‰
- * 3. å¤šé—¹é’Ÿè®¾ç½®ä¸ç®¡ç†ï¼ˆæ”¯æŒ4ä¸ªç‹¬ç«‹é—¹é’Ÿï¼‰
- * 4. è§¦æ‘¸å±äº¤äº’ç•Œé¢ï¼ˆæ”¯æŒåŒé¡µé¢åˆ‡æ¢ï¼‰
- * 5. ä¸²å£é€šä¿¡è·å–å¤©æ°”æ•°æ®
- * 6. LEDå’Œèœ‚é¸£å™¨æŒ‡ç¤º
+ * ±¾³ÌĞòÊµÏÖÁËÒ»¸ö»ùÓÚSTM32F407µÄÖÇÄÜÊ±ÖÓÏµÍ³£¬¾ß±¸ÒÔÏÂ¹¦ÄÜ£º
+ * 1. ÊµÊ±Ê±ÖÓÏÔÊ¾Óë¹ÜÀí
+ * 2. ÌìÆøĞÅÏ¢ÏÔÊ¾£¨ÎÂ¶È¡¢Êª¶È¡¢½µË®Á¿¡¢ÌìÆøÍ¼±ê£©
+ * 3. ¶àÄÖÖÓÉèÖÃÓë¹ÜÀí£¨Ö§³Ö4¸ö¶ÀÁ¢ÄÖÖÓ£©
+ * 4. ´¥ÃşÆÁ½»»¥½çÃæ£¨Ö§³ÖË«Ò³ÃæÇĞ»»£©
+ * 5. ´®¿ÚÍ¨ĞÅ»ñÈ¡ÌìÆøÊı¾İ
+ * 6. LEDºÍ·äÃùÆ÷Ö¸Ê¾
  * 
  * @hardware
  * - MCU: STM32F407ZGT6
- * - LCD: å¸¦è§¦æ‘¸å±çš„å½©è‰²æ¶²æ™¶æ˜¾ç¤ºå±
- * - é€šä¿¡: USART3ä¸²å£
- * - å®šæ—¶å™¨: TIM10 (10msæ—¶é—´ç‰‡)
+ * - LCD: ´ø´¥ÃşÆÁµÄ²ÊÉ«Òº¾§ÏÔÊ¾ÆÁ
+ * - Í¨ĞÅ: USART3´®¿Ú
+ * - ¶¨Ê±Æ÷: TIM10 (10msÊ±¼äÆ¬)
  * - LED: GPIOF0-7
- * - èœ‚é¸£å™¨: GPIOC13
- * - æŒ‰é”®: GPIOF8
+ * - ·äÃùÆ÷: GPIOC13
+ * - °´¼ü: GPIOF8
  * 
  * @note
- * - ç³»ç»Ÿæ—¶é’Ÿé¢‘ç‡: 168MHz
- * - æ—¶é—´ç‰‡å‘¨æœŸ: 10ms (TIM10ä¸­æ–­)
- * - ä¸²å£æ³¢ç‰¹ç‡: 115200
- * - LCDåˆ†è¾¨ç‡: 480x800
+ * - ÏµÍ³Ê±ÖÓÆµÂÊ: 168MHz
+ * - Ê±¼äÆ¬ÖÜÆÚ: 10ms (TIM10ÖĞ¶Ï)
+ * - ´®¿Ú²¨ÌØÂÊ: 115200
+ * - LCD·Ö±æÂÊ: 480x800
  ********************************************************************************/
 
 #include "stm32f4xx.h"
@@ -44,11 +44,11 @@
 #include "EXIT.h"
 #include "kokomi.h"
 
-/* å¤–éƒ¨ä¸­æ–­æ ‡å¿—ï¼ˆç”±EXITä¸­æ–­æœåŠ¡ç¨‹åºè®¾ç½®ï¼‰ */
+/* Íâ²¿ÖĞ¶Ï±êÖ¾£¨ÓÉEXITÖĞ¶Ï·şÎñ³ÌĞòÉèÖÃ£© */
 unsigned char Int_flag = 0;
 
 /********************************************************************************
- * @section å‡½æ•°å£°æ˜åŒº
+ * @section º¯ÊıÉùÃ÷Çø
  ********************************************************************************/
 void Alarm0_Callback(void);
 void Alarm1_Callback(void);
@@ -59,162 +59,162 @@ void Draw_Page2_Alarm_Set(void);
 u8 str_split(char *src, char delim, char **result, u8 max_len);
 
 /********************************************************************************
- * @section é¡µé¢å’ŒåŠŸèƒ½å®šä¹‰
+ * @section Ò³ÃæºÍ¹¦ÄÜ¶¨Òå
  ********************************************************************************/
 
-/* é¡µé¢ç¼–å·å®šä¹‰ */
-#define PAGE_1            0  /**< ä¸»ç•Œé¢ï¼ˆå¤©æ°”å’Œé—¹é’Ÿåˆ—è¡¨ï¼‰ */
-#define PAGE_2            1  /**< é—¹é’Ÿè®¾ç½®ç•Œé¢ */
+/* Ò³Ãæ±àºÅ¶¨Òå */
+#define PAGE_1            0  /**< Ö÷½çÃæ£¨ÌìÆøºÍÄÖÖÓÁĞ±í£© */
+#define PAGE_2            1  /**< ÄÖÖÓÉèÖÃ½çÃæ */
 
-/* è§¦æ‘¸åŠŸèƒ½IDå®šä¹‰ - ç”¨äºè¯†åˆ«ä¸åŒçš„è§¦æ‘¸æŒ‰é’® */
-#define FUNC_ALARM_1      0  /**< é—¹é’Ÿ1æŒ‰é’® */
-#define FUNC_ALARM_2      1  /**< é—¹é’Ÿ2æŒ‰é’® */
-#define FUNC_ALARM_3      2  /**< é—¹é’Ÿ3æŒ‰é’® */
-#define FUNC_ALARM_4      3  /**< é—¹é’Ÿ4æŒ‰é’® */
-#define FUNC_HOUR_ADD     4  /**< å°æ—¶å¢åŠ æŒ‰é’® */
-#define FUNC_HOUR_SUB     5  /**< å°æ—¶å‡å°‘æŒ‰é’® */
-#define FUNC_MIN_ADD      6  /**< åˆ†é’Ÿå¢åŠ æŒ‰é’® */
-#define FUNC_MIN_SUB      7  /**< åˆ†é’Ÿå‡å°‘æŒ‰é’® */
-#define FUNC_ALARM_EN     8  /**< é—¹é’Ÿå¯ç”¨/ç¦ç”¨åˆ‡æ¢æŒ‰é’® */
-#define FUNC_SAVE_ALARM   9  /**< ä¿å­˜é—¹é’Ÿè®¾ç½®æŒ‰é’® */
-#define FUNC_CANCEL_ALARM 10 /**< å–æ¶ˆç¼–è¾‘è¿”å›æŒ‰é’® */
+/* ´¥Ãş¹¦ÄÜID¶¨Òå - ÓÃÓÚÊ¶±ğ²»Í¬µÄ´¥Ãş°´Å¥ */
+#define FUNC_ALARM_1      0  /**< ÄÖÖÓ1°´Å¥ */
+#define FUNC_ALARM_2      1  /**< ÄÖÖÓ2°´Å¥ */
+#define FUNC_ALARM_3      2  /**< ÄÖÖÓ3°´Å¥ */
+#define FUNC_ALARM_4      3  /**< ÄÖÖÓ4°´Å¥ */
+#define FUNC_HOUR_ADD     4  /**< Ğ¡Ê±Ôö¼Ó°´Å¥ */
+#define FUNC_HOUR_SUB     5  /**< Ğ¡Ê±¼õÉÙ°´Å¥ */
+#define FUNC_MIN_ADD      6  /**< ·ÖÖÓÔö¼Ó°´Å¥ */
+#define FUNC_MIN_SUB      7  /**< ·ÖÖÓ¼õÉÙ°´Å¥ */
+#define FUNC_ALARM_EN     8  /**< ÄÖÖÓÆôÓÃ/½ûÓÃÇĞ»»°´Å¥ */
+#define FUNC_SAVE_ALARM   9  /**< ±£´æÄÖÖÓÉèÖÃ°´Å¥ */
+#define FUNC_CANCEL_ALARM 10 /**< È¡Ïû±à¼­·µ»Ø°´Å¥ */
 
 /********************************************************************************
- * @section å…¨å±€çŠ¶æ€å˜é‡
+ * @section È«¾Ö×´Ì¬±äÁ¿
  ********************************************************************************/
 
-/* è§¦æ‘¸å’Œåˆ·æ–°æ§åˆ¶å˜é‡ */
-u8 g_last_touch_flag          = 0;   /**< ä¸Šæ¬¡è§¦æ‘¸çŠ¶æ€æ ‡å¿— */
-u8 g_alarm_data_changed       = 0;   /**< é—¹é’Ÿæ•°æ®å˜åŒ–æ ‡å¿—ï¼Œç”¨äºè§¦å‘UIæ›´æ–° */
-u32 g_touch_debounce_cnt      = 0;   /**< è§¦æ‘¸é˜²æŠ–åŠ¨è®¡æ•°å™¨ */
-const u16 REFRESH_THRESHOLD   = 50;  /**< ä¸»ç•Œé¢åˆ·æ–°é˜ˆå€¼ï¼ˆå¾ªç¯æ¬¡æ•°ï¼‰ */
-const u16 TOUCH_DEBOUNCE_TIME = 2;   /**< è§¦æ‘¸é˜²æŠ–æ—¶é—´ï¼ˆå•ä½ï¼šå¾ªç¯æ¬¡æ•°ï¼‰ */
+/* ´¥ÃşºÍË¢ĞÂ¿ØÖÆ±äÁ¿ */
+u8 g_last_touch_flag          = 0;   /**< ÉÏ´Î´¥Ãş×´Ì¬±êÖ¾ */
+u8 g_alarm_data_changed       = 0;   /**< ÄÖÖÓÊı¾İ±ä»¯±êÖ¾£¬ÓÃÓÚ´¥·¢UI¸üĞÂ */
+u32 g_touch_debounce_cnt      = 0;   /**< ´¥Ãş·À¶¶¶¯¼ÆÊıÆ÷ */
+const u16 REFRESH_THRESHOLD   = 50;  /**< Ö÷½çÃæË¢ĞÂãĞÖµ£¨Ñ­»·´ÎÊı£© */
+const u16 TOUCH_DEBOUNCE_TIME = 2;   /**< ´¥Ãş·À¶¶Ê±¼ä£¨µ¥Î»£ºÑ­»·´ÎÊı£© */
 
-/* é¡µé¢2ï¼ˆé—¹é’Ÿè®¾ç½®ç•Œé¢ï¼‰æ§åˆ¶å˜é‡ */
-u8 g_page2_last_page = PAGE_1;  /**< é¡µé¢2ä¸Šæ¬¡æ‰€åœ¨çš„é¡µé¢ï¼Œç”¨äºæ£€æµ‹é¡µé¢åˆ‡æ¢ */
-u8 g_page2_btn_drawn = 0;       /**< é¡µé¢2æŒ‰é’®æ˜¯å¦å·²ç»˜åˆ¶æ ‡å¿— */
-u8 g_current_page    = PAGE_1;  /**< å½“å‰æ˜¾ç¤ºçš„é¡µé¢ç¼–å· */
+/* Ò³Ãæ2£¨ÄÖÖÓÉèÖÃ½çÃæ£©¿ØÖÆ±äÁ¿ */
+u8 g_page2_last_page = PAGE_1;  /**< Ò³Ãæ2ÉÏ´ÎËùÔÚµÄÒ³Ãæ£¬ÓÃÓÚ¼ì²âÒ³ÃæÇĞ»» */
+u8 g_page2_btn_drawn = 0;       /**< Ò³Ãæ2°´Å¥ÊÇ·ñÒÑ»æÖÆ±êÖ¾ */
+u8 g_current_page    = PAGE_1;  /**< µ±Ç°ÏÔÊ¾µÄÒ³Ãæ±àºÅ */
 
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
+// ÌìÆø´úÂë×ªÎªÖĞÎÄÃèÊö
 const char *WeatherCodeToName(uint16_t code)
 {
     switch (code) {
         case 100:
-            return "ï¿½ï¿½";
+            return "Çç";
         case 101:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "¶àÔÆ";
         case 102:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "ÉÙÔÆ";
         case 103:
-            return "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+            return "Çç¼ä¶àÔÆ";
         case 104:
-            return "ï¿½ï¿½";
+            return "Òõ";
         case 150:
-            return "ï¿½ï¿½";
+            return "Çç";
         case 151:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "¶àÔÆ";
         case 152:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "ÉÙÔÆ";
         case 153:
-            return "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+            return "Çç¼ä¶àÔÆ";
         case 300:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "ÕóÓê";
         case 301:
-            return "Ç¿ï¿½ï¿½ï¿½ï¿½";
+            return "Ç¿ÕóÓê";
         case 302:
-            return "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+            return "À×ÕóÓê";
         case 303:
-            return "Ç¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+            return "Ç¿À×ÕóÓê";
         case 304:
-            return "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ±ï¿½ï¿½ï¿½";
+            return "À×ÕóÓê°éÓĞ±ù±¢";
         case 305:
-            return "Ğ¡ï¿½ï¿½";
+            return "Ğ¡Óê";
         case 306:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "ÖĞÓê";
         case 307:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "´óÓê";
         case 308:
-            return "ï¿½ï¿½ï¿½Ë½ï¿½ï¿½ï¿½";
+            return "¼«¶Ë½µÓê";
         case 309:
-            return "Ã«Ã«ï¿½ï¿½/Ï¸ï¿½ï¿½";
+            return "Ã«Ã«Óê/Ï¸Óê";
         case 310:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "±©Óê";
         case 311:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "´ó±©Óê";
         case 312:
-            return "ï¿½Ø´ï¿½ï¿½ï¿½";
+            return "ÌØ´ó±©Óê";
         case 313:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "¶³Óê";
         case 314:
-            return "Ğ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+            return "Ğ¡µ½ÖĞÓê";
         case 315:
-            return "ï¿½Ğµï¿½ï¿½ï¿½ï¿½ï¿½";
+            return "ÖĞµ½´óÓê";
         case 316:
-            return "ï¿½óµ½±ï¿½ï¿½ï¿½";
+            return "´óµ½±©Óê";
         case 317:
-            return "ï¿½ï¿½ï¿½êµ½ï¿½ï¿½ï¿½ï¿½";
+            return "±©Óêµ½´ó±©Óê";
         case 318:
-            return "ï¿½ï¿½ï¿½êµ½ï¿½Ø´ï¿½ï¿½ï¿½";
+            return "´ó±©Óêµ½ÌØ´ó±©Óê";
         case 350:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "ÕóÓê";
         case 351:
-            return "Ç¿ï¿½ï¿½ï¿½ï¿½";
+            return "Ç¿ÕóÓê";
         case 399:
-            return "ï¿½ï¿½";
+            return "Óê";
         case 400:
             return "Ğ¡Ñ©";
         case 401:
-            return "ï¿½ï¿½Ñ©";
+            return "ÖĞÑ©";
         case 402:
-            return "ï¿½ï¿½Ñ©";
+            return "´óÑ©";
         case 403:
-            return "ï¿½ï¿½Ñ©";
+            return "±©Ñ©";
         case 404:
-            return "ï¿½ï¿½ï¿½Ñ©";
+            return "Óê¼ĞÑ©";
         case 405:
-            return "ï¿½ï¿½Ñ©ï¿½ï¿½ï¿½ï¿½";
+            return "ÓêÑ©ÌìÆø";
         case 406:
-            return "ï¿½ï¿½ï¿½ï¿½ï¿½Ñ©";
+            return "ÕóÓê¼ĞÑ©";
         case 407:
-            return "ï¿½ï¿½Ñ©";
+            return "ÕóÑ©";
         case 408:
-            return "Ğ¡ï¿½ï¿½ï¿½ï¿½Ñ©";
+            return "Ğ¡µ½ÖĞÑ©";
         case 409:
-            return "ï¿½Ğµï¿½ï¿½ï¿½Ñ©";
+            return "ÖĞµ½´óÑ©";
         case 410:
-            return "ï¿½óµ½±ï¿½Ñ©";
+            return "´óµ½±©Ñ©";
         case 456:
-            return "ï¿½ï¿½ï¿½ï¿½ï¿½Ñ©";
+            return "ÕóÓê¼ĞÑ©";
         case 457:
-            return "ï¿½ï¿½Ñ©";
+            return "ÕóÑ©";
         case 499:
             return "Ñ©";
         case 500:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "±¡Îí";
         case 501:
-            return "ï¿½ï¿½";
+            return "Îí";
         case 502:
-            return "ï¿½ï¿½";
+            return "ö²";
         case 503:
-            return "ï¿½ï¿½É³";
+            return "ÑïÉ³";
         case 507:
-            return "É³ï¿½ï¿½ï¿½ï¿½";
+            return "É³³¾±©";
         case 508:
-            return "Ç¿É³ï¿½ï¿½ï¿½ï¿½";
+            return "Ç¿É³³¾±©";
         case 509:
-            return "Å¨ï¿½ï¿½";
+            return "Å¨Îí";
         case 510:
-            return "Ç¿Å¨ï¿½ï¿½";
+            return "Ç¿Å¨Îí";
         case 511:
-            return "ï¿½Ğ¶ï¿½ï¿½ï¿½";
+            return "ÖĞ¶Èö²";
         case 512:
-            return "ï¿½Ø¶ï¿½ï¿½ï¿½";
+            return "ÖØ¶Èö²";
         case 513:
-            return "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+            return "ÑÏÖØö²";
         case 514:
-            return "ï¿½ï¿½ï¿½ï¿½";
+            return "´óÎí";
         case 515:
-            return "ï¿½ï¿½Ç¿Å¨ï¿½ï¿½";
+            return "ÌØÇ¿Å¨Îí";
         default:
             return "Î´Öª";
     }
@@ -227,7 +227,7 @@ typedef struct {
 } RealTime;
 RealTime g_real_time = {0};
 
-// ï¿½ï¿½ï¿½Ó½á¹¹ï¿½ï¿½ - ï¿½Ş¸ï¿½Îª4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ½ï¿½ï¿½ï¿½TimerÄ£ï¿½ï¿½
+// ×î´óÄÖÖÓÊıÁ¿£¨1¸öÕ¼Î» + 4¸ö¿ÉÓÃÄÖÖÓ£¬¶ÔÓ¦Ò³Ãæ°´Å¥ºÍ¶¨Ê±Æ÷£©
 #define MAX_ALARM_CNT 5
 typedef struct {
     u8 hour;
@@ -238,16 +238,16 @@ typedef struct {
     char name[16];
 } AlarmInfo;
 
-// ï¿½Æ³ï¿½Ô­ï¿½Ğµï¿½ Alarm0 (ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1-4 ï¿½ï¿½Ó¦ UI
+// Alarm0 ÎªÕ¼Î»£¬Alarm1-4 ¶ÔÓ¦ UI ÉÏµÄËÄ¸öÄÖÖÓ
 AlarmInfo g_alarm_list[MAX_ALARM_CNT] = {
-    {0, 0, 0, 0, NULL, "ï¿½ï¿½ï¿½ï¿½Î»"},             // ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½Õ¼Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
-    {7, 30, 0, 1, Alarm1_Callback, "ï¿½ï¿½ï¿½ï¿½1"},  // ï¿½ï¿½ï¿½ï¿½1
-    {0, 0, 1, 1, Alarm1_Callback, "ï¿½ï¿½ï¿½ï¿½2"},   // ï¿½ï¿½ï¿½ï¿½2
-    {12, 30, 1, 1, Alarm1_Callback, "ï¿½ï¿½ï¿½ï¿½3"}, // ï¿½ï¿½ï¿½ï¿½3
-    {18, 0, 0, 1, Alarm1_Callback, "ï¿½ï¿½ï¿½ï¿½4"}   // ï¿½ï¿½ï¿½ï¿½4
+    {0, 0, 0, 0, NULL, "±£ÁôÎ»"},             // Õ¼Î»£¬²»Ê¹ÓÃ
+    {7, 30, 0, 1, Alarm1_Callback, "ÄÖÖÓ1"},  // ÄÖÖÓ1
+    {0, 0, 1, 1, Alarm1_Callback, "ÄÖÖÓ2"},   // ÄÖÖÓ2
+    {12, 30, 1, 1, Alarm1_Callback, "ÄÖÖÓ3"}, // ÄÖÖÓ3
+    {18, 0, 0, 1, Alarm1_Callback, "ÄÖÖÓ4"}   // ÄÖÖÓ4
 };
 
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½
+// ´¥Ãş°´Å¥ÅäÖÃ
 typedef struct {
     u16 x1;
     u16 y1;
@@ -258,26 +258,26 @@ typedef struct {
 } Touch_Button_t;
 
 Touch_Button_t g_touch_btns_page1[] = {
-    {20, 235, 450, 265, FUNC_ALARM_1, "ï¿½ï¿½ï¿½ï¿½1"},
-    {20, 270, 450, 300, FUNC_ALARM_2, "ï¿½ï¿½ï¿½ï¿½2"},
-    {20, 305, 450, 335, FUNC_ALARM_3, "ï¿½ï¿½ï¿½ï¿½3"},
-    {20, 340, 450, 370, FUNC_ALARM_4, "ï¿½ï¿½ï¿½ï¿½4"},
+    {20, 235, 450, 265, FUNC_ALARM_1, "ÄÖÖÓ1"},
+    {20, 270, 450, 300, FUNC_ALARM_2, "ÄÖÖÓ2"},
+    {20, 305, 450, 335, FUNC_ALARM_3, "ÄÖÖÓ3"},
+    {20, 340, 450, 370, FUNC_ALARM_4, "ÄÖÖÓ4"},
 };
 
 Touch_Button_t g_touch_btns_page2[] = {
     {100, 150, 180, 180, FUNC_HOUR_ADD, "Ğ¡Ê±+"},
     {280, 150, 360, 180, FUNC_HOUR_SUB, "Ğ¡Ê±-"},
-    {100, 200, 180, 230, FUNC_MIN_ADD, "ï¿½ï¿½ï¿½ï¿½+"},
-    {280, 200, 360, 230, FUNC_MIN_SUB, "ï¿½ï¿½ï¿½ï¿½-"},
-    {180, 250, 300, 280, FUNC_ALARM_EN, "ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½"},
-    {80, 320, 220, 350, FUNC_SAVE_ALARM, "ï¿½ï¿½ï¿½ï¿½"},
-    {260, 320, 400, 350, FUNC_CANCEL_ALARM, "È¡ï¿½ï¿½"},
+    {100, 200, 180, 230, FUNC_MIN_ADD, "·ÖÖÓ+"},
+    {280, 200, 360, 230, FUNC_MIN_SUB, "·ÖÖÓ-"},
+    {180, 250, 300, 280, FUNC_ALARM_EN, "¿ª/¹Ø"},
+    {80, 320, 220, 350, FUNC_SAVE_ALARM, "±£´æ"},
+    {260, 320, 400, 350, FUNC_CANCEL_ALARM, "È¡Ïû"},
 };
 
 #define BTN_CNT_PAGE1 (sizeof(g_touch_btns_page1) / sizeof(Touch_Button_t))
 #define BTN_CNT_PAGE2 (sizeof(g_touch_btns_page2) / sizeof(Touch_Button_t))
 
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãºï¿½ï¿½ï¿½
+// ÉèÖÃÄÖÖÓÊôĞÔ
 u8 Alarm_Set(u8 alarm_idx, u8 hour, u8 minute, u8 enable, u8 show, void (*callback)(void), const char *name)
 {
     if (alarm_idx >= MAX_ALARM_CNT) return 0;
@@ -293,17 +293,17 @@ u8 Alarm_Set(u8 alarm_idx, u8 hour, u8 minute, u8 enable, u8 show, void (*callba
     return 1;
 }
 
-// ï¿½ï¿½ï¿½Ó´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ g_alarm_list ï¿½Ğµï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+// ¼ì²éÄÖÖÓ£¨±éÀú g_alarm_list ÖĞÓĞĞ§µÄÄÖÖÓ£©
 void Alarm_CheckAndTrigger(void)
 {
     static u8 last_second = 0xFF;
-    // Ã¿ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬Ê±ï¿½ï¿½ï¿½Ó¾ï¿½ï¿½ï¿½
+    // ÃëÎ´±ä»¯Ö±½Ó·µ»Ø£¬±ÜÃâÖØ¸´´¦Àí
     if (g_real_time.second == last_second) return;
     last_second = g_real_time.second;
 
-    // Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ó¼ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ½öÔÚÃ¿·ÖÖÓµÄµÚ 0 Ãë¼ì²éÄÖÖÓ
     if (g_real_time.second == 0) {
-        for (u8 i = 1; i < MAX_ALARM_CNT; i++) { // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0
+        for (u8 i = 1; i < MAX_ALARM_CNT; i++) { // Ìø¹ıÕ¼Î»µÄ 0 ºÅ
             if (g_alarm_list[i].enable &&
                 g_alarm_list[i].hour == g_real_time.hour &&
                 g_alarm_list[i].minute == g_real_time.minute &&
@@ -316,19 +316,19 @@ void Alarm_CheckAndTrigger(void)
     }
 }
 
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¸ï¿½ï¿½ï¿½
+// ÄÖÖÓĞÅÏ¢¸´ÖÆ
 void Alarm_Copy(AlarmInfo *dst, const AlarmInfo *src)
 {
     if (dst == NULL || src == NULL) return;
     dst->hour     = src->hour;
     dst->minute   = src->minute;
     dst->enable   = src->enable;
-    dst->show     = src->show; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½
+    dst->show     = src->show; // ÊÇ·ñÔÚ UI ÏÔÊ¾
     dst->callback = src->callback;
     strncpy(dst->name, src->name, sizeof(dst->name) - 1);
 }
 
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ½á¹¹ï¿½ï¿½
+// ÌìÆøÊı¾İ½á¹¹
 typedef struct {
     char time_str[25];
     u8 temp;
@@ -340,14 +340,14 @@ typedef struct {
 
 WeatherData g_weather;
 
-// ï¿½ï¿½Ê½ï¿½ï¿½ÊµÊ±Ê±ï¿½ï¿½
+// ½«ÊµÊ±Êı¾İ¸ñÊ½»¯Îª×Ö·û´®
 void format_real_time_to_str(void)
 {
     static char date_part[12] = "2025-12-27";
     sprintf((char *)g_weather.time_str, "%s %02d:%02d:%02d", date_part, g_real_time.hour, g_real_time.minute, g_real_time.second);
 }
 
-// ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½
+// ½âÎö×Ö·û´®Ê±¼äµ½ÊµÊ±½á¹¹
 void parse_time_str_to_realtime(char *time_str)
 {
     char *date_time[2];
@@ -361,7 +361,7 @@ void parse_time_str_to_realtime(char *time_str)
     g_real_time.second = (u8)atoi(hms[2]);
 }
 
-// ï¿½Ö·ï¿½ï¿½ï¿½ï¿½Ö¸îº¯ï¿½ï¿½
+// ·Ö¸î×Ö·û´®
 u8 str_split(char *src, char delim, char **result, u8 max_len)
 {
     u8 count          = 0;
@@ -374,7 +374,7 @@ u8 str_split(char *src, char delim, char **result, u8 max_len)
     return count;
 }
 
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ½ï¿½ï¿½ï¿½
+// ½âÎöÌìÆø´®¿ÚÊı¾İ
 void weather_parse(char *recv_buf)
 {
     char *split_result[6];
@@ -394,12 +394,12 @@ void weather_parse(char *recv_buf)
     g_weather.precip     = (u8)atoi(split_result[3]);
     g_weather.icons      = (u8)atoi(split_result[4]);
     g_weather.humidity   = (u8)atoi(split_result[5]);
-    sprintf(echo_buf, "ï¿½Õµï¿½iconsï¿½ï¿½%d\r\n", g_weather.icons);
+    sprintf(echo_buf, "ÊÕµ½ÌìÆøÍ¼±ê´úÂë=%d\r\n", g_weather.icons);
     USART3_Senddata((uint8_t *)echo_buf, strlen(echo_buf));
     LED1_OFF;
 }
 
-// ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½
+// ÔÚ LCD ÉÏÏÔÊ¾ÌìÆøÍ¼±ê
 void ShowWeatherIcon(u16 x, u16 y, u16 code)
 {
     const u8 *icon_data = weather_icon_map[code];
@@ -410,7 +410,7 @@ void ShowWeatherIcon(u16 x, u16 y, u16 code)
 #define LCD_BUF_SIZE 64
 u8 lcd_show_buf[LCD_BUF_SIZE];
 
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
+// ÌìÆøĞÅÏ¢ÏÔÊ¾
 void weather_lcd_show(void)
 {
 #define SCREEN_MARGIN_X  20
@@ -426,29 +426,29 @@ void weather_lcd_show(void)
 
     LCD_Fill(120, BASE_Y, 479, BASE_Y + 20, WHITE);
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
-    sprintf((char *)lcd_show_buf, "ï¿½ï¿½Ç°Ê±ï¿½ä£º%s", g_weather.time_str);
+    sprintf((char *)lcd_show_buf, "¸üĞÂÊ±¼ä: %s", g_weather.time_str);
     LCD_ShowString(120, BASE_Y, lcd_show_buf, BLACK, WHITE);
 
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
-    sprintf((char *)lcd_show_buf, "ï¿½ï¿½Ç°ï¿½Â¶È£ï¿½%dï¿½ï¿½ï¿½Ï¶ï¿½", g_weather.temp);
+    sprintf((char *)lcd_show_buf, "µ±Ç°ÎÂ¶È: %d¡æ", g_weather.temp);
     LCD_ShowString(SCREEN_MARGIN_X, BASE_Y + LINE_SPACING_Y, lcd_show_buf, BLACK, WHITE);
 
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
-    sprintf((char *)lcd_show_buf, "ï¿½ï¿½ï¿½ï¿½Â¶È£ï¿½%dï¿½ï¿½ï¿½Ï¶ï¿½", g_weather.feels_like);
+    sprintf((char *)lcd_show_buf, "Ìå¸ĞÎÂ¶È: %d¡æ", g_weather.feels_like);
     LCD_ShowString(SCREEN_MARGIN_X + COLUMN_SPACING_X, BASE_Y + LINE_SPACING_Y, lcd_show_buf, BLACK, WHITE);
 
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
-    sprintf((char *)lcd_show_buf, "ï¿½ï¿½ï¿½ï¿½Êªï¿½È£ï¿½%d%%", g_weather.humidity);
+    sprintf((char *)lcd_show_buf, "¿ÕÆøÊª¶È: %d%%", g_weather.humidity);
     LCD_ShowString(SCREEN_MARGIN_X, BASE_Y + 2 * LINE_SPACING_Y, lcd_show_buf, BLACK, WHITE);
 
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
-    sprintf((char *)lcd_show_buf, "ï¿½ï¿½Ë®ï¿½ï¿½ï¿½ï¿½%dmm", g_weather.precip);
+    sprintf((char *)lcd_show_buf, "½µË®Á¿: %d mm", g_weather.precip);
     LCD_ShowString(SCREEN_MARGIN_X + COLUMN_SPACING_X, BASE_Y + 2 * LINE_SPACING_Y, lcd_show_buf, BLACK, WHITE);
 
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
     const char *weather_name = WeatherCodeToName(g_weather.icons);
-    if (g_weather.icons == 0) weather_name = "Î´ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½";
-    sprintf((char *)lcd_show_buf, "ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½%s", weather_name);
+    if (g_weather.icons == 0) weather_name = "Î´»ñÈ¡ÌìÆø";
+    sprintf((char *)lcd_show_buf, "ÌìÆø×´¿ö: %s", weather_name);
     LCD_ShowString(SCREEN_MARGIN_X, BASE_Y + 3 * LINE_SPACING_Y, lcd_show_buf, BLACK, WHITE);
 
     if (g_weather.icons != 0 && g_weather.icons != g_last_weather.icons) {
@@ -461,7 +461,7 @@ void weather_lcd_show(void)
 #undef BASE_Y
 }
 
-// ï¿½ï¿½ï¿½ï¿½PAGE1ï¿½ï¿½ï¿½ï¿½ï¿½Ğ±ï¿½
+// »æÖÆ PAGE1 ÄÖÖÓÁĞ±í
 void Draw_Page1_Alarm_List(void)
 {
 #define ALARM_LIST_X     20
@@ -470,21 +470,21 @@ void Draw_Page1_Alarm_List(void)
 
     if (!g_alarm_data_changed) return;
 
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ±ï¿½ï¿½ï¿½ï¿½ï¿½
+    // Çå¿ÕÁĞ±íÇøÓò
     LCD_Fill(0, ALARM_LIST_Y, 479, ALARM_LIST_Y + BTN_CNT_PAGE1 * ALARM_LINE_SPACE + 20, WHITE);
 
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½show=1ï¿½ï¿½ï¿½ï¿½ï¿½Ó£ï¿½ï¿½ë´¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½
-    u8 show_idx = 0; // ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1~4ï¿½ï¿½
+    // ½ö»æÖÆ show=1 µÄÄÖÖÓ£¬Ó³Éäµ½Ò³Ãæ°´Å¥ 1~4
+    u8 show_idx = 0; // ¶ÔÓ¦ FUNC_ALARM_1~4
     for (u8 i = 0; i < MAX_ALARM_CNT; i++) {
         if (g_alarm_list[i].show != 1) continue;
 
-        // Æ¥ï¿½ä´¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½show_idxï¿½ï¿½Ó¦FUNC_ALARM_1~4ï¿½ï¿½
+        // ½« show_idx Ó³Éäµ½ FUNC_ALARM_1~4
         if (show_idx >= BTN_CNT_PAGE1) break;
         u16 bg_color = g_alarm_list[i].enable ? LIGHT_GREEN : LIGHT_GRAY;
         LCD_Fill(g_touch_btns_page1[show_idx].x1, g_touch_btns_page1[show_idx].y1, g_touch_btns_page1[show_idx].x2, g_touch_btns_page1[show_idx].y2, bg_color);
 
         memset(lcd_show_buf, 0, LCD_BUF_SIZE);
-        sprintf((char *)lcd_show_buf, "%sï¿½ï¿½%02d:%02d [%s]", g_alarm_list[i].name, g_alarm_list[i].hour, g_alarm_list[i].minute, g_alarm_list[i].enable ? "ï¿½ï¿½ï¿½ï¿½" : "ï¿½ï¿½ï¿½ï¿½");
+        sprintf((char *)lcd_show_buf, "%s  %02d:%02d [%s]", g_alarm_list[i].name, g_alarm_list[i].hour, g_alarm_list[i].minute, g_alarm_list[i].enable ? "ÒÑÆôÓÃ" : "ÒÑ¹Ø±Õ");
         u16 text_color = g_alarm_list[i].enable ? DARK_BLUE : DARK_GRAY;
         LCD_ShowString(g_touch_btns_page1[show_idx].x1 + 10, g_touch_btns_page1[show_idx].y1 + 5, lcd_show_buf, text_color, bg_color);
 
@@ -501,31 +501,31 @@ void Draw_Page1_Alarm_List(void)
 u8 g_selected_alarm = 1;
 AlarmInfo g_edit_alarm;
 
-// ï¿½ï¿½ï¿½ï¿½PAGE2ï¿½ï¿½ï¿½Ã½ï¿½ï¿½ï¿½
+// »æÖÆ PAGE2 ÄÖÖÓÉèÖÃ½çÃæ
 void Draw_Page2_Alarm_Set(void)
 {
-    // 1. Ò³ï¿½ï¿½ï¿½Ğ»ï¿½Ê±Ç¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // 1. ´¦ÀíÒ³ÃæÇĞ»»Ê±µÄÈ«ÆÁË¢ĞÂ
     if (g_page2_last_page != PAGE_2) {
-        LCD_Fill(0, 0, 479, 479, WHITE); // È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        LCD_Fill(0, 0, 479, 479, WHITE); // Çå¿ÕÆÁÄ»
         g_page2_last_page = PAGE_2;
-        g_page2_btn_drawn = 0; // ï¿½Ğ»ï¿½Ò³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ±ï¿½ï¿½
+        g_page2_btn_drawn = 0; // Ò³ÃæÇĞ»»ºóÖØĞÂ»æÖÆ°´Å¥
     }
 
-    // 2. ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
+    // 2. ÏÔÊ¾±êÌâ
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
-    sprintf((char *)lcd_show_buf, "ï¿½à¼­ï¿½ï¿½ï¿½Ó£ï¿½%s", g_edit_alarm.name);
+    sprintf((char *)lcd_show_buf, "±à¼­ÄÖÖÓ: %s", g_edit_alarm.name);
     LCD_ShowString(120, 30, lcd_show_buf, RED, WHITE);
 
-    // 3. ï¿½ï¿½Ê¾Ê±ï¿½ï¿½ï¿½×´Ì¬
+    // 3. ÏÔÊ¾Ê±¼äºÍ¿ª¹Ø×´Ì¬
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
-    sprintf((char *)lcd_show_buf, "ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Ã£ï¿½%02d : %02d", g_edit_alarm.hour, g_edit_alarm.minute);
+    sprintf((char *)lcd_show_buf, "ÄÖÖÓÊ±¼ä: %02d : %02d", g_edit_alarm.hour, g_edit_alarm.minute);
     LCD_ShowString(150, 90, lcd_show_buf, DARK_BLUE, WHITE);
 
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
-    sprintf((char *)lcd_show_buf, "ï¿½ï¿½Ç°×´Ì¬ï¿½ï¿½%s", g_edit_alarm.enable ? "ï¿½ï¿½ï¿½ï¿½" : "ï¿½ï¿½ï¿½ï¿½");
+    sprintf((char *)lcd_show_buf, "µ±Ç°×´Ì¬: %s", g_edit_alarm.enable ? "ÆôÓÃ" : "¹Ø±Õ");
     LCD_ShowString(150, 120, lcd_show_buf, BROWN, WHITE);
 
-    // 4. ï¿½ï¿½ï¿½×´Î½ï¿½ï¿½ï¿½Ò³ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Æ°ï¿½ï¿½ï¿½
+    // 4. ³õÊ¼»¯»æÖÆ°´Å¥
     if (!g_page2_btn_drawn) {
         for (u8 i = 0; i < BTN_CNT_PAGE2; i++) {
             LCD_Fill(g_touch_btns_page2[i].x1, g_touch_btns_page2[i].y1, g_touch_btns_page2[i].x2, g_touch_btns_page2[i].y2, LIGHT_BLUE);
@@ -535,49 +535,48 @@ void Draw_Page2_Alarm_Set(void)
     }
 }
 
-// Ò³ï¿½ï¿½ï¿½Ğ»ï¿½ï¿½ï¿½ï¿½ï¿½
+// Ò³ÃæÇĞ»»
 void Page_Switch(u8 page)
 {
     g_current_page = page;
-    // ï¿½ï¿½ï¿½ï¿½ï¿½Ğ»ï¿½ï¿½ï¿½ï¿½Ä¸ï¿½Ò³ï¿½æ£¬ï¿½ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // Ò³ÃæÇĞ»»Ê±ÇåÆÁ£¬±ÜÃâ²ĞÓ°
     LCD_Fill(0, 0, 479, 479, WHITE);
-    delay_ms(10); // ï¿½ï¿½Ê±È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    delay_ms(10); // ÁôÒ»µãÊ±¼ä¸ø LCD Ë¢ĞÂ
 
     if (page == PAGE_1) {
-        // ï¿½ï¿½ï¿½ï¿½PAGE2ï¿½ï¿½ï¿½Ğ±ï¿½Ç£ï¿½ï¿½Â´Î½ï¿½ï¿½ï¿½PAGE2Ê±ï¿½ï¿½ï¿½Â»ï¿½ï¿½ï¿½
+        // ·µ»Ø PAGE1 Ê±ÖØÖÃ PAGE2 ×´Ì¬
         g_page2_last_page = PAGE_1;
         g_page2_btn_drawn = 0;
-        // ï¿½ï¿½ï¿½ï¿½PAGE1ï¿½ï¿½ï¿½ï¿½
+        // »æÖÆ PAGE1
         g_alarm_data_changed = 1;
         weather_lcd_show();
         Draw_Page1_Alarm_List();
         LCD_DrawPicture(10, 380, 457, 730, (u8 *)kokomi);
     } else if (page == PAGE_2) {
-        // ï¿½ï¿½ï¿½ï¿½PAGE2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ½øÈë PAGE2 Ç°ÏÈÇåÆÁ
         LCD_Clear(WHITE);
         Alarm_Copy(&g_edit_alarm, &g_alarm_list[g_selected_alarm]);
         Draw_Page2_Alarm_Set();
     }
 }
 
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü´ï¿½ï¿½ï¿½
 void Handle_Touch_Func(u8 func_id)
 {
     switch (func_id) {
         case FUNC_ALARM_1:
-            g_selected_alarm = 1; // ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½
+            g_selected_alarm = 1; // Ñ¡ÔñÄÖÖÓ1²¢½øÈë±à¼­
             Page_Switch(PAGE_2);
             break;
         case FUNC_ALARM_2:
-            g_selected_alarm = 2; // ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½2ï¿½ï¿½
+            g_selected_alarm = 2; // Ñ¡ÔñÄÖÖÓ2²¢½øÈë±à¼­
             Page_Switch(PAGE_2);
             break;
         case FUNC_ALARM_3:
-            g_selected_alarm = 3; // ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½3ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3ï¿½ï¿½
+            g_selected_alarm = 3; // Ñ¡ÔñÄÖÖÓ3²¢½øÈë±à¼­
             Page_Switch(PAGE_2);
             break;
         case FUNC_ALARM_4:
-            g_selected_alarm = 4; // ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½4ï¿½ï¿½
+            g_selected_alarm = 4; // Ñ¡ÔñÄÖÖÓ4²¢½øÈë±à¼­
             Page_Switch(PAGE_2);
             break;
         case FUNC_HOUR_ADD:
@@ -613,7 +612,7 @@ void Handle_Touch_Func(u8 func_id)
     }
 }
 
-// ï¿½ï¿½ï¿½ï¿½É¨ï¿½ï¿½ï¿½ï¿½Æ¥ï¿½ï¿½
+// ´¥ÃşÉ¨Ãè²¢Æ¥Åä¹¦ÄÜÇøÓò
 void Touch_Scan_And_Match(void)
 {
     u16 tx, ty;
@@ -658,10 +657,10 @@ void Touch_Scan_And_Match(void)
     g_last_touch_flag = current_touch_flag;
 }
 
-// ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½
+// ÄÖÖÓ0£º¶¨ÆÚÇëÇóÌìÆø
 void Alarm0_Callback(void)
 {
-    USART3_Senddata((uint8_t *)" GET_WEATHER", 12); // ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ş½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
+    USART3_Senddata((uint8_t *)" GET_WEATHER", 12); // Í¨¹ı´®¿ÚÇëÇóÌìÆøÊı¾İ
 }
 
 void Alarm1_Callback(void)
@@ -676,10 +675,10 @@ void Alarm1_Callback(void)
 }
 volatile u32 g_systick_ms_counter = 0;
 u8 g_time_updated_flag            = 0;
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È«ï¿½Ö±ï¿½Ö¾Î»ï¿½ï¿½ï¿½ï¿½ï¿½Ú±ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ÒªË¢ï¿½ï¿½Ê±ï¿½ï¿½UIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±UIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
+// ±ê¼ÇÊÇ·ñĞèÒªË¢ĞÂÊ±¼ä UI£¨½ö PAGE1 Ë¢ĞÂ£©
 u8 g_need_refresh_time_ui = 0;
 volatile u8 Update_Flag   = 0;
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// Ö÷º¯Êı
 int main(void)
 {
     EXTI_Config();
@@ -687,7 +686,7 @@ int main(void)
     LCD_Init();
     UART3_Configuration();
 
-    // 1. ï¿½ï¿½Ê¼ï¿½ï¿½ Timer Ä£ï¿½ï¿½ (TIM10, 10msï¿½Ğ¶ï¿½)
+    // 1. ³õÊ¼»¯ Timer (TIM10, 10ms ÖĞ¶Ï)
     TIM10_TimeSliceInit();
     AlarmManager_Init();
 
@@ -696,7 +695,7 @@ int main(void)
     tp_dev.init();
     LCD_Clear(WHITE);
 
-    // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ³õÊ¼»¯ÌìÆøÄ¬ÈÏÖµ
     memset(&g_weather, 0, sizeof(WeatherData));
     strncpy(g_weather.time_str, "2025-12-27 00:00:00", sizeof(g_weather.time_str) - 1);
     g_weather.temp       = 25;
@@ -709,15 +708,15 @@ int main(void)
     g_real_time.minute = 0;
     g_real_time.second = 0;
 
-    // ï¿½ï¿½Ê¼ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (UIï¿½ï¿½Ê¾) - ï¿½Æ³ï¿½ï¿½ï¿½Ô­ï¿½Ğµï¿½ Alarm0 ï¿½ï¿½ï¿½ï¿½
-    Alarm_Set(1, 7, 30, 0, 1, Alarm1_Callback, "ï¿½ï¿½ï¿½ï¿½1");
-    Alarm_Set(2, 0, 0, 1, 1, Alarm1_Callback, "ï¿½ï¿½ï¿½ï¿½2");
-    Alarm_Set(3, 12, 30, 1, 1, Alarm1_Callback, "ï¿½ï¿½ï¿½ï¿½3");
-    Alarm_Set(4, 18, 0, 0, 1, Alarm1_Callback, "ï¿½ï¿½ï¿½ï¿½4");
+    // ³õÊ¼»¯ UI Ä¬ÈÏÄÖÖÓ£¨Alarm0 ÎªÕ¼Î»£©
+    Alarm_Set(1, 7, 30, 0, 1, Alarm1_Callback, "ÄÖÖÓ1");
+    Alarm_Set(2, 0, 0, 1, 1, Alarm1_Callback, "ÄÖÖÓ2");
+    Alarm_Set(3, 12, 30, 1, 1, Alarm1_Callback, "ÄÖÖÓ3");
+    Alarm_Set(4, 18, 0, 0, 1, Alarm1_Callback, "ÄÖÖÓ4");
 
-    // 2. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¢ï¿½áµ½ Timer Ä£ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
-    // 5ï¿½ï¿½ï¿½ï¿½ = 300ï¿½ï¿½ = 30000ï¿½ï¿½10msÊ±ï¿½ï¿½Æ¬
-    // Ê¹ï¿½ï¿½ ALARM_REPEAT Ä£Ê½ï¿½ï¿½È·ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½Ã¿5ï¿½ï¿½ï¿½Ó´ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
+    // 2. ×¢²áÖÜÆÚÄÖÖÓ£¨¶¨ÆÚÀ­È¡ÌìÆø£©
+    // 5·ÖÖÓ = 300Ãë = 30000 ¸ö 10ms ÖÜÆÚ
+    // ALARM_REPEAT ±íÊ¾Ñ­»·´¥·¢
     Alarm_Register(30000, ALARM_REPEAT, Alarm0_Callback);
 
     Alarm_Copy(&g_edit_alarm, &g_alarm_list[1]);
@@ -725,28 +724,28 @@ int main(void)
     LED2_OFF;
 
     u16 refresh_count        = 0;
-    u16 timer_1s_accumulator = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½Û»ï¿½10msï¿½ï¿½ï¿½ï¿½
+    u16 timer_1s_accumulator = 0; // ÀÛ¼Æ 10ms ½ÚÅÄµ½ 1s
 
-    // ï¿½×´Î·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // Ê×´ÎÉÏµçÖ÷¶¯ÇëÇóÒ»´ÎÌìÆø
     USART3_Senddata((uint8_t *)" GET_WEATHER", 12);
 
 
 
     while (1) {
-        // ============== ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ğ¡ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Âºï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Şºï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½==============
-        // 3. ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Æ¬ï¿½ß¼ï¿½
-        // Update_Flag ï¿½ï¿½ TIM1_UP_TIM10_IRQHandler ï¿½ï¿½ï¿½ï¿½1 (ï¿½ï¿½ï¿½ï¿½10ms)
+        // ============== ¶¨Ê±Æ¬ÈÎÎñ£¨10ms£© ==============
+        // 3. ¶¨Ê±ĞÄÌøÈÎÎñ
+        // Update_Flag ÓÉ TIM1_UP_TIM10_IRQHandler ÖÃ 1£¨ÖÜÆÚ 10ms£©
         if (Update_Flag == 1) {
-            Update_Flag = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å»ï¿½ï¿½ï¿½
+            Update_Flag = 0; // ÇåÁã±êÖ¾£¬±ÜÃâÖØ¸´´¦Àí
 
-            // ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Û»ï¿½ï¿½ï¿½ï¿½Şºï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È£ï¿½ï¿½ï¿½
+            // ÀÛ¼Æ 10ms µ½ 1s
             timer_1s_accumulator++;
 
-            // ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½ï¿½ë¼¶Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½Şºï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½/ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            // Ô¼ 76 ´Î£¨¡Ö1s£©ºó¸üĞÂÊ±¼äÓëÄÖÖÓ
             if (timer_1s_accumulator >= 76) {
                 timer_1s_accumulator = 0;
 
-                // ï¿½ï¿½ï¿½ï¿½ÊµÊ±Ê±ï¿½ä£¨ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ã£¬ï¿½Şºï¿½Ê±ï¿½ï¿½
+                // ¸üĞÂÊ±¼ä¼ÆÊı
                 g_real_time.second++;
                 if (g_real_time.second >= 60) {
                     g_real_time.second = 0;
@@ -758,24 +757,24 @@ int main(void)
                     }
                 }
 
-                // ï¿½ï¿½Ê½ï¿½ï¿½Ê±ï¿½ä£¨ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó²ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
+                // Ë¢ĞÂÊ±¼ä×Ö·û´®
                 format_real_time_to_str();
 
-                // ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ó£ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½Ğ¶Ï£ï¿½ï¿½Şºï¿½Ê±ï¿½ï¿½
+                // ¼ì²éÄÖÖÓ´¥·¢
                 Alarm_CheckAndTrigger();
 
-                // ï¿½ï¿½ï¿½ï¿½ï¿½ÒªË¢ï¿½ï¿½Ê±ï¿½ï¿½UIï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½Ö´ï¿½Ğºï¿½Ê±UIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                // ÔÚ PAGE1 Ê±Ë¢ĞÂÊ±¼ä UI
                 if (g_current_page == PAGE_1) {
                     g_need_refresh_time_ui = 1;
                 }
             }
 
-            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½TimerÄ£ï¿½éµ¹ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Şºï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            // µ÷¶ÈÄÖÖÓ¶¨Ê±Æ÷¶ÓÁĞ
             AlarmTimer_Process();
         }
 
-        // ============== ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½ñ£¨¿ï¿½ï¿½Üºï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó°ï¿½ï¿½ï¿½Ê±ï¿½ï¿½==============
-        // ï¿½ï¿½ï¿½ï¿½UIï¿½ë½»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+        // ============== ÆäËûÊÂ¼ş´¦Àí ==============
+        // Íâ²¿ÖĞ¶Ï±êÖ¾£¨·äÃùÆ÷¹Ø±Õ£©
         if (Int_flag == 1) {
             delay_ms(20);
             if (GPIO_ReadOutputDataBit(GPIOF, GPIO_Pin_8) == 0) {
@@ -786,9 +785,9 @@ int main(void)
 
         Touch_Scan_And_Match();
 
-        // ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½
+        // ´®¿Ú½ÓÊÕÍê³É
         if (Uart3.ReceiveFinish == 1) {
-            // (ï¿½ï¿½ï¿½ë±£ï¿½Ö²ï¿½ï¿½ï¿½)
+            // ²¹ÉÏ×Ö·û´®½áÊø·û
             if (Uart3.RXlenth < 300)
                 Uart3.Rxbuf[Uart3.RXlenth] = '\0';
             else
@@ -804,10 +803,10 @@ int main(void)
             LED2_OFF;
         }
 
-        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½UIË¢ï¿½Â£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
+        // ¸üĞÂÊ±¼ä UI£¨½ö PAGE1£©
         if (g_need_refresh_time_ui == 1) {
             weather_lcd_show();
-            g_need_refresh_time_ui = 0; // ï¿½ï¿½ï¿½Ë¢ï¿½Â±ï¿½Ö¾
+            g_need_refresh_time_ui = 0; // ÒÑ¸üĞÂ
             
         }
 
