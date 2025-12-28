@@ -73,30 +73,6 @@ void AlarmManager_Init(void)
     next_id    = 1; // ID计数器重置为1
 }
 
-/********************************************************************************
- * @brief   内部静态函数：获取有效闹钟ID（优先复用已删除的ID）
- * @param   无
- * @retval  有效ID：1~MAX_ALARM_NUM；0表示无可用ID（队列满）
- * @note    复用ID避免ID溢出，提升ID利用率
- ********************************************************************************/
-static uint8_t GetValidID(void)
-{
-    // 第一步：遍历查找未被使用的ID（优先复用）
-    for (uint8_t i = 1; i <= MAX_ALARM_NUM; i++) {
-        uint8_t id_used = 0;
-        // 检查当前ID是否已被占用
-        for (uint8_t j = 0; j < MAX_ALARM_NUM; j++) {
-            if (alarm_queue[j].state == ALARM_VALID && alarm_queue[j].id == i) {
-                id_used = 1;
-                break;
-            }
-        }
-        if (!id_used) return i; // 返回未被使用的ID
-    }
-    // 第二步：无复用ID时，自增分配新ID（不超过最大值）
-    if (next_id <= MAX_ALARM_NUM) return next_id++;
-    return 0; // 队列满，无可用ID
-}
 
 /********************************************************************************
  * @brief   内部静态函数：插入闹钟到优先级队列
@@ -128,76 +104,6 @@ static uint8_t InsertAlarm(AlarmNode_T new_alarm)
     return 1;
 }
 
-/********************************************************************************
- * @brief   添加闹钟函数（对外接口）
- * @param   duration_ms 定时时长（单位：ms，需≥TIME_SLICE_MS）
- * @param   mode        闹钟重复模式（ALARM_ONCE/ALARM_REPEAT）
- * @param   cb          闹钟触发回调函数（不可为NULL）
- * @retval  闹钟ID：1~MAX_ALARM_NUM；0表示添加失败
- * @note    1. 建议在调用前关闭总中断（__disable_irq()），防止中断与主循环竞争；
- *          2. 示例：__disable_irq(); Alarm_Add(1000, ALARM_ONCE, cb); __enable_irq();
- ********************************************************************************/
-uint8_t Alarm_Add(uint32_t duration_ms, AlarmMode mode, AlarmCallback cb)
-{
-    // 参数合法性检查：回调函数非空、时长≥时间片、队列未满
-    if (cb == NULL || duration_ms < TIME_SLICE_MS || queue_size >= MAX_ALARM_NUM) {
-        return 0;
-    }
-
-    // 获取有效ID
-    uint8_t new_id = GetValidID();
-    if (new_id == 0) return 0; // 无可用ID
-
-    // 构造新闹钟节点
-    AlarmNode_T new_alarm;
-    new_alarm.id          = new_id;
-    new_alarm.duration    = duration_ms / TIME_SLICE_MS; // 转换为时间片数
-    new_alarm.remain_time = new_alarm.duration;          // 初始剩余时间=总时长
-    new_alarm.mode        = mode;
-    new_alarm.state       = ALARM_VALID; // 标记为有效
-    new_alarm.cb          = cb;          // 绑定回调函数
-
-    // 插入到优先级队列
-    if (!InsertAlarm(new_alarm)) return 0;
-
-    return new_id; // 返回闹钟ID，供后续删除使用
-}
-
-/********************************************************************************
- * @brief   删除闹钟函数（对外接口）
- * @param   alarm_id 待删除的闹钟ID（由Alarm_Add返回）
- * @retval  1：删除成功；0：删除失败（ID无效/队列空）
- * @note    1. 建议在调用前关闭总中断，防止中断与主循环竞争；
- *          2. 删除后队列自动前移，保证连续性。
- ********************************************************************************/
-uint8_t Alarm_Delete(uint8_t alarm_id)
-{
-    // 参数合法性检查：ID非0、队列非空
-    if (alarm_id == 0 || queue_size == 0) return 0;
-
-    // 查找目标闹钟在队列中的位置
-    uint8_t target_pos = MAX_ALARM_NUM; // 初始化为无效位置
-    for (uint8_t i = 0; i < queue_size; i++) {
-        if (alarm_queue[i].state == ALARM_VALID && alarm_queue[i].id == alarm_id) {
-            target_pos = i;
-            break;
-        }
-    }
-    if (target_pos == MAX_ALARM_NUM) return 0; // 未找到目标闹钟
-
-    // 前移元素，移除目标节点
-    for (uint8_t i = target_pos; i < queue_size - 1; i++) {
-        alarm_queue[i] = alarm_queue[i + 1];
-    }
-
-    // 队列长度减1，并重置最后一个节点为无效状态
-    queue_size--;
-    alarm_queue[queue_size].state = ALARM_INVALID;
-    alarm_queue[queue_size].id    = 0;
-    alarm_queue[queue_size].cb    = NULL;
-
-    return 1;
-}
 
 /********************************************************************************
  * @brief   闹钟核心处理逻辑（供中断函数调用）

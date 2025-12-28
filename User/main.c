@@ -20,13 +20,12 @@ void Page_Switch(u8 page);
 void Handle_Touch_Func(u8 func_id);
 void Draw_Page1_Alarm_List(void);
 void Draw_Page2_Alarm_Set(void);
+u8 str_split(char *src, char delim, char **result, u8 max_len);
 
 // ====================== 页面与功能枚举 ======================
 #define PAGE_1 0
 #define PAGE_2 1
-u8 g_current_page = PAGE_1;
 
-// 注意：FUNC_ALARM_1~4 对应显示的闹钟1~4，天气请求闹钟无对应func_id（不显示）
 #define FUNC_ALARM_1      0
 #define FUNC_ALARM_2      1
 #define FUNC_ALARM_3      2
@@ -39,16 +38,17 @@ u8 g_current_page = PAGE_1;
 #define FUNC_SAVE_ALARM   9
 #define FUNC_CANCEL_ALARM 10
 
-// ====================== 全局状态变量（核心解决残留+闪烁+误触） ======================
+// ====================== 全局状态变量 ======================
 u8 g_last_touch_flag          = 0;
 u8 g_alarm_data_changed       = 0;
 u32 g_touch_debounce_cnt      = 0;
 const u16 REFRESH_THRESHOLD   = 50;
 const u16 TOUCH_DEBOUNCE_TIME = 2;
 
-// ====================== PAGE2绘制标记（必须全局，否则无法重置） ======================
-u8 g_page2_last_page = PAGE_1; // 全局变量，记录PAGE2上次页面状态
-u8 g_page2_btn_drawn = 0;      // 全局变量，记录PAGE2按键是否绘制
+// ====================== PAGE2绘制标记 ======================
+u8 g_page2_last_page = PAGE_1; 
+u8 g_page2_btn_drawn = 0;     
+u8 g_current_page    = PAGE_1;
 
 // 天气编码转名称
 const char *WeatherCodeToName(uint16_t code)
@@ -175,11 +175,6 @@ const char *WeatherCodeToName(uint16_t code)
     }
 }
 
-extern u8 Update_Flag;
-
-// 字符串分割函数声明
-u8 str_split(char *src, char delim, char **result, u8 max_len);
-
 // 实时时间结构体
 typedef struct {
     u8 hour;
@@ -188,30 +183,26 @@ typedef struct {
 } RealTime;
 RealTime g_real_time = {0};
 
-// 闹钟结构体（新增：show字段，1=显示在列表，0=隐藏不显示）
-#define MAX_ALARM_CNT 5 // 0=天气请求（隐藏），1~4=闹钟1~4（显示）
+// 闹钟结构体
+#define MAX_ALARM_CNT 5 
 typedef struct {
     u8 hour;
     u8 minute;
     u8 enable;
-    u8 show; // 新增：是否显示在闹钟列表 1=显示 0=隐藏
+    u8 show;
     void (*callback)(void);
     char name[16];
 } AlarmInfo;
 
-// 初始化：0=天气请求（隐藏），1~4=闹钟1~4（显示，命名简化为闹钟1/2/3/4）
 AlarmInfo g_alarm_list[MAX_ALARM_CNT] = {
-    {0, 5, 1, 0, Alarm0_Callback, "天气请求"}, // 隐藏：每5分钟发送一次天气请求
-    {7, 30, 0, 1, Alarm1_Callback, "闹钟1"},   // 显示：闹钟1
-    {0, 0, 1, 1, Alarm1_Callback, "闹钟2"},    // 显示：闹钟2
-    {12, 30, 1, 1, Alarm1_Callback, "闹钟3"},  // 显示：闹钟3
-    {18, 0, 0, 1, Alarm1_Callback, "闹钟4"}    // 显示：闹钟4
+    {0, 5, 1, 0, Alarm0_Callback, "天气请求"}, 
+    {7, 30, 0, 1, Alarm1_Callback, "闹钟1"},  
+    {0, 0, 1, 1, Alarm1_Callback, "闹钟2"},   
+    {12, 30, 1, 1, Alarm1_Callback, "闹钟3"}, 
+    {18, 0, 0, 1, Alarm1_Callback, "闹钟4"}    
 };
 
-u8 g_selected_alarm = 1; // 默认选中显示的第一个闹钟（闹钟1）
-AlarmInfo g_edit_alarm;
-
-// 触摸按键结构体（仅对应显示的闹钟1~4，移除原闹钟5）
+// 触摸按键结构体
 typedef struct {
     u16 x1;
     u16 y1;
@@ -221,7 +212,7 @@ typedef struct {
     char name[16];
 } Touch_Button_t;
 
-// 触摸按键仅绑定显示的闹钟1~4，名称对应简化
+// 触摸按键仅绑定显示的闹钟1~4
 Touch_Button_t g_touch_btns_page1[] = {
     {20, 235, 450, 265, FUNC_ALARM_1, "闹钟1"},
     {20, 270, 450, 300, FUNC_ALARM_2, "闹钟2"},
@@ -242,14 +233,14 @@ Touch_Button_t g_touch_btns_page2[] = {
 #define BTN_CNT_PAGE1 (sizeof(g_touch_btns_page1) / sizeof(Touch_Button_t))
 #define BTN_CNT_PAGE2 (sizeof(g_touch_btns_page2) / sizeof(Touch_Button_t))
 
-// 闹钟设置函数（新增：show参数，设置是否显示）
+// 闹钟设置函数
 u8 Alarm_Set(u8 alarm_idx, u8 hour, u8 minute, u8 enable, u8 show, void (*callback)(void), const char *name)
 {
     if (alarm_idx >= MAX_ALARM_CNT) return 0;
     g_alarm_list[alarm_idx].hour     = hour;
     g_alarm_list[alarm_idx].minute   = minute;
     g_alarm_list[alarm_idx].enable   = enable;
-    g_alarm_list[alarm_idx].show     = show; // 赋值是否显示标记
+    g_alarm_list[alarm_idx].show     = show; 
     g_alarm_list[alarm_idx].callback = callback;
     if (name != NULL) {
         strncpy(g_alarm_list[alarm_idx].name, name, sizeof(g_alarm_list[alarm_idx].name) - 1);
@@ -258,14 +249,13 @@ u8 Alarm_Set(u8 alarm_idx, u8 hour, u8 minute, u8 enable, u8 show, void (*callba
     return 1;
 }
 
-// 闹钟触发检查（不变，仍会触发隐藏的天气请求闹钟）
+// 闹钟触发检查
 void Alarm_CheckAndTrigger(void)
 {
     static u8 last_minute = 0xFF;
     if (g_real_time.minute == last_minute) return;
     last_minute = g_real_time.minute;
     for (u8 i = 0; i < MAX_ALARM_CNT; i++) {
-        // 隐藏闹钟仅不显示，触发逻辑正常（enable=1即触发）
         if (g_alarm_list[i].enable && g_alarm_list[i].hour == g_real_time.hour && g_alarm_list[i].minute == g_real_time.minute && g_alarm_list[i].callback != NULL) {
             g_alarm_list[i].callback();
             g_alarm_data_changed = 1;
@@ -273,7 +263,7 @@ void Alarm_CheckAndTrigger(void)
     }
 }
 
-// 闹钟数据复制（新增：复制show字段）
+// 闹钟数据复制
 void Alarm_Copy(AlarmInfo *dst, const AlarmInfo *src)
 {
     if (dst == NULL || src == NULL) return;
@@ -376,19 +366,16 @@ void weather_lcd_show(void)
 #define BASE_Y           30
 
     static WeatherData g_last_weather = {0};
-    // 仅气象数据（温度、湿度等）变化时，清屏并更新g_last_weather（保留原有优化）
     if (memcmp(&g_weather, &g_last_weather, sizeof(WeatherData)) != 0) {
         LCD_Fill(0, BASE_Y, 479, BASE_Y + 4 * LINE_SPACING_Y, WHITE);
         memcpy(&g_last_weather, &g_weather, sizeof(WeatherData));
     }
 
-    // 单独绘制时间，不受memcmp限制，确保按秒刷新
     LCD_Fill(120, BASE_Y, 479, BASE_Y + 20, WHITE);
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
     sprintf((char *)lcd_show_buf, "当前时间：%s", g_weather.time_str);
     LCD_ShowString(120, BASE_Y, lcd_show_buf, BLACK, WHITE);
 
-    // 以下为原有气象数据绘制逻辑，保持不变
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
     sprintf((char *)lcd_show_buf, "当前温度：%d摄氏度", g_weather.temp);
     LCD_ShowString(SCREEN_MARGIN_X, BASE_Y + LINE_SPACING_Y, lcd_show_buf, BLACK, WHITE);
@@ -421,7 +408,7 @@ void weather_lcd_show(void)
 #undef BASE_Y
 }
 
-// 绘制PAGE1闹钟列表（核心修改：仅绘制show=1的闹钟，过滤隐藏的天气请求闹钟）
+// 绘制PAGE1闹钟列表
 void Draw_Page1_Alarm_List(void)
 {
 #define ALARM_LIST_X     20
@@ -433,15 +420,10 @@ void Draw_Page1_Alarm_List(void)
     // 清空闹钟列表区域
     LCD_Fill(0, ALARM_LIST_Y, 479, ALARM_LIST_Y + BTN_CNT_PAGE1 * ALARM_LINE_SPACE + 20, WHITE);
 
-    // 绘制列表标题
-    memset(lcd_show_buf, 0, LCD_BUF_SIZE);
-    sprintf((char *)lcd_show_buf, "===== 闹钟列表（点击编辑）=====");
-    LCD_ShowString(80, ALARM_LIST_Y, lcd_show_buf, RED, WHITE);
-
     // 遍历闹钟列表，仅绘制show=1的闹钟（与触摸按键对应）
     u8 show_idx = 0; // 显示索引（对应触摸按键1~4）
     for (u8 i = 0; i < MAX_ALARM_CNT; i++) {
-        if (g_alarm_list[i].show != 1) continue; // 过滤隐藏闹钟（天气请求）
+        if (g_alarm_list[i].show != 1) continue;
 
         // 匹配触摸按键（show_idx对应FUNC_ALARM_1~4）
         if (show_idx >= BTN_CNT_PAGE1) break;
@@ -463,17 +445,20 @@ void Draw_Page1_Alarm_List(void)
 #undef ALARM_LINE_SPACE
 }
 
-// 绘制PAGE2设置界面（保持不变，仅显示选中闹钟的名称）
+u8 g_selected_alarm = 1;
+AlarmInfo g_edit_alarm;
+
+// 绘制PAGE2设置界面
 void Draw_Page2_Alarm_Set(void)
 {
-    // 1. 页面切换时强制清屏（彻底清除PAGE2内容）
+    // 1. 页面切换时强制清屏
     if (g_page2_last_page != PAGE_2) {
         LCD_Fill(0, 0, 479, 479, WHITE); // 全屏清屏
         g_page2_last_page = PAGE_2;
         g_page2_btn_drawn = 0; // 切换页面后重置按键绘制标记
     }
 
-    // 2. 显示标题（对应简化后的闹钟名称）
+    // 2. 显示标题
     memset(lcd_show_buf, 0, LCD_BUF_SIZE);
     sprintf((char *)lcd_show_buf, "编辑闹钟：%s", g_edit_alarm.name);
     LCD_ShowString(120, 30, lcd_show_buf, RED, WHITE);
@@ -497,11 +482,11 @@ void Draw_Page2_Alarm_Set(void)
     }
 }
 
-// 页面切换函数（保持不变）
+// 页面切换函数
 void Page_Switch(u8 page)
 {
     g_current_page = page;
-    // 关键：无论切换到哪个页面，先全屏清屏，彻底清除残留
+    // 无论切换到哪个页面，先全屏清屏，彻底清除残留
     LCD_Fill(0, 0, 479, 479, WHITE);
     delay_ms(10); // 延时确保清屏完成
 
@@ -520,7 +505,7 @@ void Page_Switch(u8 page)
     }
 }
 
-// 触摸功能处理（核心修改：对应简化后的闹钟1~4，无天气请求闹钟的触摸入口）
+// 触摸功能处理
 void Handle_Touch_Func(u8 func_id)
 {
     switch (func_id) {
@@ -618,7 +603,7 @@ void Touch_Scan_And_Match(void)
     g_last_touch_flag = current_touch_flag;
 }
 
-// 回调函数（天气请求回调保持不变，自动触发无界面）
+// 回调函数
 void Alarm0_Callback(void)
 {
     USART3_Senddata((uint8_t *)" GET_WEATHER", 12); // 自动发送天气请求，无界面显示
@@ -637,6 +622,9 @@ void Alarm1_Callback(void)
 volatile u32 g_systick_ms_counter = 0;
 u8 g_systick_1s_flag              = 0;
 u8 g_time_updated_flag            = 0;
+
+
+extern u8 Update_Flag;
 // 主函数
 int main(void)
 {

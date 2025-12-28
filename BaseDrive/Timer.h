@@ -76,8 +76,6 @@ extern uint8_t next_id;                        // 下一个待分配的闹钟ID
  ********************************************************************************/
 void TIM10_TimeSliceInit(void);                                            // TIM10初始化：生成10ms基础时间片中断
 void AlarmManager_Init(void);                                              // 闹钟管理器初始化：清空队列、重置ID
-uint8_t Alarm_Add(uint32_t duration_ms, AlarmMode mode, AlarmCallback cb); // 添加闹钟：返回闹钟ID（失败返回0）
-uint8_t Alarm_Delete(uint8_t alarm_id);                                    // 删除闹钟：按ID移除（成功返回1，失败返回0）
 void AlarmTimer_Process(void);                                             // 闹钟核心处理逻辑：供中断函数调用
 
 #endif /* __TIMER_H */
